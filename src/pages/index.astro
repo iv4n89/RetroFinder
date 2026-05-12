@@ -1,9 +1,18 @@
 ---
-import RetroLayout from "../layouts/RetroLayout.astro"
+import RetroLayout from "../layouts/RetroLayout.astro";
+import Window from "../components/Window.astro";
 ---
 
 <RetroLayout title="Desktop" activePage="desktop">
-	<div class="flex items-center justify-center h-full">
-		<p class="font-mono text-label-lg">Desktop - en construcción</p>
-	</div>
+  <div class="flex items-center justify-center h-full">
+    <Window
+      title="RetroFinder"
+      footer="3 items, 15K available"
+      class="w-full max-w-lg"
+    >
+      <div class="p-4">
+        <p class="font-mono text-label-lg">Test content</p>
+      </div>
+    </Window>
+  </div>
 </RetroLayout>

@@ -1,0 +1,54 @@
+---
+interface Props {
+  title: string;
+  class?: string;
+  footer?: string;
+}
+
+const { title, class: className = "", footer } = Astro.props;
+---
+
+<div
+  class={`bg-surface border-2 border-primary shadow-retro flex flex-col ${className}`}
+>
+  <!-- TITLE BAR -->
+  <div
+    class="h-titlebar border-b-2 border-primary flex items-center justify-center relative overflow-hidden shrink-0"
+  >
+    <div class="title-bar-stripes absolute inset-0"></div>
+    <div
+      class="absolute left-1 w-3 h-3 border border-primary bg-surface cursor-pointer hover:bg-primary z-10"
+    >
+    </div>
+    <div
+      class="relative z-10 bg-surface px-4 font-mono text-label-lg uppercase tracking-wide"
+    >
+      {title}
+    </div>
+    <div class="absolute right-1 top-1 flex gap-1 z-10">
+      <div
+        class="w-3 h-3 border border-primary title-bar-stripes cursor-pointer"
+      >
+      </div>
+      <div
+        class="w-3 h-3 border border-primary bg-surface cursor-pointer hover:bg-primary"
+      >
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="flex-1 overflow-hidden">
+    <slot />
+  </div>
+
+  <!-- FOOTER -->
+  {
+    footer && (
+      <div class="h-titlebar border-t-2 border-primary flex items-center justify-between px-2 shrink-0">
+        <span class="font-mono text-label-sm">{footer}</span>
+        <div class="w-3 h-3 border border-primary bg-surface cursor-pointer" />
+      </div>
+    )
+  }
+</div>
