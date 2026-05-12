@@ -4,15 +4,115 @@ import Window from "../components/Window.astro";
 ---
 
 <RetroLayout title="Desktop" activePage="desktop">
+  <div class="absolute right-6 top-6 flex flex-col gap-6 items-center">
+    {
+      [
+        { icon: "save", label: "Hard Disk" },
+        { icon: "folder", label: "System Folder" },
+        { icon: "delete", label: "Trash" },
+      ].map((item) => (
+        <div class="group cursor-pointer flex flex-col items-center gap-1">
+          <div class="w-12 h-12 flex items-center justify-center border border-primary bg-surface group-hover:bg-primary group-hover:text-on-primary">
+            <span class="material-symbols-outlined" style="font-size: 32px;">
+              {item.icon}
+            </span>
+          </div>
+          <span class="font-mono text-label-sm bg-surface px-1 border border-primary group-hover:bg-primary group-hover:text-on-primary">
+            {item.label}
+          </span>
+        </div>
+      ))
+    }
+  </div>
+
   <div class="flex items-center justify-center h-full">
     <Window
       title="RetroFinder"
-      footer="3 items, 15K available"
-      class="w-full max-w-lg"
+      footer="4 items, 15K available"
+      class="w-full max-w-xl"
     >
-      <div class="p-4">
-        <p class="font-mono text-label-lg">Test content</p>
+      <div class="p-4 grid grid-cols-3 gap-4">
+        {
+          [
+            {
+              icon: "history_edu",
+              label: "Archive",
+              href: "/archive",
+              desc: "Historical records",
+            },
+            {
+              icon: "museum",
+              label: "Museum",
+              href: "/museum",
+              desc: "Hardware collection",
+            },
+            {
+              icon: "terminal",
+              label: "Terminal",
+              href: "/terminal",
+              desc: "Command line",
+            },
+          ].map((item) => (
+            <a
+              href={item.href}
+              class="group border border-primary p-4 flex flex-col items-center gap-2 bg-surface hover:bg-primary hover:text-on-primary cursor-pointer no-underline text-primary"
+            >
+              <span class="material-symbols-outlined" style="font-size: 48px;">
+                {item.icon}
+              </span>
+              <span class="font-mono text-label-lg">{item.label}</span>
+              <span class="font-mono text-label-sm opacity-60 group-hover:opacity-100 text-center">
+                {item.desc}
+              </span>
+            </a>
+          ))
+        }
+
+        <div class="col-span-3 border border-primary p-4 flex flex-col gap-3">
+          <div
+            class="flex justify-between items-center border-b border-primary border-dotted pb-2"
+          >
+            <span class="font-mono text-label-lg font-bold"
+              >System Statistics</span
+            >
+            <span class="material-symbols-outlined">analytics</span>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            {
+              [
+                { label: "Computers in archive", value: "10", pct: "60%" },
+                { label: "Years of history", value: "48", pct: "90%" },
+              ].map((stat) => (
+                <div class="flex flex-col gap-1">
+                  <div class="flex justify-between font-mono text-label-sm">
+                    <span>{stat.label}</span>
+                    <span>{stat.value}</span>
+                  </div>
+                  <div class="h-2 border border-primary w-full bg-surface relative">
+                    <div
+                      class="absolute left-0 top-0 h-full bg-primary"
+                      style={`width: ${stat.pct}`}
+                    />
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+        </div>
       </div>
     </Window>
+  </div>
+
+  <div
+    class="absolute bottom-8 left-26 w-56 bg-surface border-2 border-primary opacity-80 pointer-events-none"
+  >
+    <div
+      class="h-titlebar flex items-center justify-center border-b-2 border-primary"
+    >
+      <span class="font-mono text-label-lg">Note Pad</span>
+    </div>
+    <div class="p-3 font-body text-body-md leading-relaxed">
+      Don't forget to back up your 400K floppy disks today.
+    </div>
   </div>
 </RetroLayout>
