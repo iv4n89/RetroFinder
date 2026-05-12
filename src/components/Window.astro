@@ -4,14 +4,16 @@ interface Props {
   class?: string;
   footer?: string;
   id?: string;
+  style?: string;
 }
 
-const { title, class: className = "", footer, id } = Astro.props;
+const { title, class: className = "", footer, id, style } = Astro.props;
 ---
 
 <div
   id={id}
   class={`bg-surface border-2 border-primary shadow-retro flex flex-col ${className}`}
+  style={style}
 >
   <!-- TITLE BAR -->
   <div
