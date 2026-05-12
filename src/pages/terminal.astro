@@ -51,13 +51,13 @@ import Window from '../components/Window.astro'
 </RetroLayout>
 
 <script is:inline define:vars={{ commands: {
-  HELP: `Comandos disponibles:\n  HELP     - muestra esta ayuda\n  DIR      - lista los archivos\n  CLS      - limpia la pantalla\n  VER      - versión del sistema\n  DATE     - fecha actual\n  HISTORY  - historia de la retroinformática\n  LIST     - lista de ordenadores históricos`,
-  DIR: `Volumen en unidad C: RETRO_HD\n\nDIRECTORIO DE C:\\\n\n  SYSTEM/\n  ARCHIVE/\n  MUSEUM/\n  README.TXT          512 bytes\n  HISTORY.DAT       4.096 bytes\n\n  2 archivo(s)       4.608 bytes\n  2 directorio(s)   59.392 bytes libres`,
+  HELP: `Available commands:\n  HELP     - show this help\n  DIR      - list files\n  CLS      - clear screen\n  VER      - system version\n  DATE     - current date\n  HISTORY  - retro computing history\n  LIST     - list of historic computers`,
+  DIR: `Volume in drive C: RETRO_HD\n\nDIRECTORY OF C:\\\n\n  SYSTEM/\n  ARCHIVE/\n  MUSEUM/\n  README.TXT          512 bytes\n  HISTORY.DAT       4.096 bytes\n\n  2 file(s)         4.608 bytes\n  2 directory(s)   59.392 bytes free`,
   CLS: '__CLEAR__',
-  VER: `RetroOS Versión 1.0\nCopyright (c) 1984 RetroComputing Corp.\nAll rights reserved.`,
+  VER: `RetroOS Version 1.0\nCopyright (c) 1984 RetroComputing Corp.\nAll rights reserved.`,
   DATE: `__DATE__`,
-  HISTORY: `=== HISTORIA DE LA RETROINFORMÁTICA ===\n\n1945  ENIAC — primer ordenador electrónico\n1947  Invención del transistor (Bell Labs)\n1971  Intel 4004 — primer microprocesador\n1975  Altair 8800 — el big bang del PC\n1977  Apple II, TRS-80, Commodore PET\n1981  IBM PC — nace el estándar\n1982  Commodore 64 — el más vendido\n1984  Macintosh — la GUI para todos\n1985  Amiga y Atari ST — era de 16 bits\n1993  Pentium — era multimedia`,
-  LIST: `=== ORDENADORES EN EL ARCHIVO ===\n\n  ENIAC (1945)              Mainframe\n  Altair 8800 (1975)        Micro\n  Apple II (1977)           Personal\n  TRS-80 Model I (1977)     Personal\n  IBM PC (1981)             Personal\n  Commodore 64 (1982)       Personal\n  Apple Lisa (1983)         GUI Station\n  Macintosh 128K (1984)     Revolution\n  Amiga 1000 (1985)         Personal\n  Atari ST (1985)           Personal`,
+  HISTORY: `=== RETRO COMPUTING HISTORY ===\n\n1945  ENIAC — first electronic computer\n1947  Transistor invention (Bell Labs)\n1971  Intel 4004 — first microprocessor\n1975  Altair 8800 — PC big bang\n1977  Apple II, TRS-80, Commodore PET\n1981  IBM PC — standard is born\n1982  Commodore 64 — best-selling\n1984  Macintosh — GUI for everyone\n1985  Amiga and Atari ST — 16-bit era\n1993  Pentium — multimedia era`,
+  LIST: `=== COMPUTERS IN THE ARCHIVE ===\n\n  ENIAC (1945)              Mainframe\n  Altair 8800 (1975)        Micro\n  Apple II (1977)           Personal\n  TRS-80 Model I (1977)     Personal\n  IBM PC (1981)             Personal\n  Commodore 64 (1982)       Personal\n  Apple Lisa (1983)         GUI Station\n  Macintosh 128K (1984)     Revolution\n  Amiga 1000 (1985)         Personal\n  Atari ST (1985)           Personal`,
 }}}>
 
   const body     = document.getElementById('terminal-body')
@@ -88,7 +88,7 @@ import Window from '../components/Window.astro'
     const result = commands[key]
 
     if (!result) {
-      printLine(`'${cmd}' no se reconoce como comando interno.\nEscriba HELP para ver los comandos disponibles.`)
+      printLine(`'${cmd}' is not recognized as an internal command.\nType HELP to see available commands.`)
       return
     }
 
@@ -99,7 +99,7 @@ import Window from '../components/Window.astro'
 
     if (result === '__DATE__') {
       const now = new Date()
-      printLine(`Fecha actual: ${now.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`)
+      printLine(`Current date: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`)
       return
     }
 
