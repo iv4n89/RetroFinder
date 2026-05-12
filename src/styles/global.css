@@ -1,1 +1,91 @@
+@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=JetBrains+Mono:wght@400;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
 @import "tailwindcss";
+
+@theme {
+  /* Colores — generan bg-*, text-*, border-* */
+  --color-primary: #000000;
+  --color-surface: #f9f9f9;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #1b1b1b;
+  --color-on-primary-container: #848484;
+  --color-surface-container-low: #f3f3f4;
+  --color-surface-container: #eeeeee;
+  --color-surface-container-high: #e8e8e8;
+  --color-surface-container-highest: #e2e2e2;
+
+  /* Fuentes — generan font-* */
+  --font-mono: "JetBrains Mono", monospace;
+  --font-body: "Courier Prime", Courier, monospace;
+
+  /* Spacing — generan h-*, w-*, p-*, m-*, top-*, etc */
+  --spacing-titlebar: 20px;
+  --spacing-sidebar: 96px;
+  --spacing-footer: 24px;
+}
+
+/* Patrones que Tailwind no puede generar, los definimos como clases normales */
+.bg-dither {
+  background-image: radial-gradient(#000 1px, transparent 0);
+  background-size: 2px 2px;
+  background-color: #ffffff;
+}
+
+.title-bar-stripes {
+  background-image: repeating-linear-gradient(
+    0deg,
+    #000 0px,
+    #000 1px,
+    transparent 1px,
+    transparent 2px
+  );
+}
+
+.bg-checkerboard {
+  background-image: conic-gradient(
+    #fff 0.25turn,
+    #000 0.25turn 0.5turn,
+    #fff 0.5turn 0.75turn,
+    #000 0.75turn
+  );
+  background-size: 2px 2px;
+}
+
+.shadow-retro {
+  box-shadow: 4px 4px 0px 0px #000;
+}
+
+.shadow-retro-sm {
+  box-shadow: 2px 2px 0px 0px #000;
+}
+
+.material-symbols-outlined {
+  font-size: 18px;
+  display: inline-block;
+  vertical-align: middle;
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  user-select: none;
+}

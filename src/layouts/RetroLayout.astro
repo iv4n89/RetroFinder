@@ -1,0 +1,106 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  activePage: "desktop" | "archive" | "museum" | "terminal";
+}
+
+const { title, activePage } = Astro.props as Props;
+
+const navItems = [
+  { id: "desktop", label: "Desktop", href: "/" },
+  { id: "archive", label: "Archive", href: "/archive" },
+  { id: "museum", label: "Museum", href: "/museum" },
+  { id: "terminal", label: "Terminal", href: "/terminal" },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} - RetroFinder</title>
+  </head>
+  <body class="bg-dither font-body text-primary h-screen overflow-hidden">
+    <!-- TOP NAV BAR -->
+    <header
+      class="fixed top-0 w-full h-titlebar bg-surface border-b-2 border-primary flex items-center px-4 justify-between z-50"
+    >
+      <nav class="flex items-center gap-4">
+        <span class="font-mono text-headline-md font-bold">RetroFinder</span>
+        <div class="flex">
+          {
+            navItems.map((item) => (
+              <a
+                href={item.href}
+                class={`font-mono text-label-lg px-2 cursor-pointer no-underline ${activePage === item.id ? "bg-primary text-on-primary" : "text-primary hover:bg-primary hover:text-on-primary"}`}
+              >
+                {item.label}
+              </a>
+            ))
+          }
+        </div>
+      </nav>
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined cursor-pointer">help</span>
+        <span class="material-symbols-outlined cursor-pointer">settings</span>
+      </div>
+    </header>
+
+    <!-- SIDE NAV BAR -->
+    <aside
+      class="fixed left-0 top-titlebar h-full w-sidebar bg-surface border-r-2 border-primary flex flex-col py-4 z-40"
+    >
+      <div class="flex flex-col items-center gap-1 mb-6 text-center px-2">
+        <span class="material-symbols-outlined" style="font-size: 32px;"
+          >computer</span
+        >
+        <span class="font-mono text-label-sm">Finder 1.0</span>
+        <span class="font-mono text-label-sm opacity-70">64K RAM</span>
+      </div>
+      <nav class="flex flex-col gap-2">
+        {
+          [
+            { icon: "flaky", label: "Disks" },
+            { icon: "terminal", label: "System" },
+            { icon: "lan", label: "Network" },
+            { icon: "delete", label: "Trash" },
+          ].map((item) => (
+            <div class="text-primary p-2 flex flex-col items-center gap-1 cursor-pointer hover:bg-primary-container hover:text-on-primary">
+              <span class="material-symbols-outlined">{item.icon}</span>
+              <span class="font-mono text-label-sm">{item.label}</span>
+            </div>
+          ))
+        }
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main
+      class="fixed inset-0 pt-titlebar pl-sidebar pb-footer overflow-hidden"
+    >
+      <slot />
+    </main>
+
+    <!-- FOOTER -->
+    <footer
+      class="fixed bottom-0 w-full h-footer bg-surface border-t-2 border-primary flex justify-between items-center px-6 z-50"
+    >
+      <span class="font-mono text-label-lg">© 1984 RetroComputing Corp.</span>
+      <div class="flex gap-4">
+        {
+          ["Specs", "Manual", "Credits"].map((link) => (
+            <a
+              href="#"
+              class="font-body text-body-md no-underline text-primary hover:bg-primary hover:text-on-primary px-1"
+            >
+              {link}
+            </a>
+          ))
+        }
+      </div>
+    </footer>
+  </body>
+</html>
