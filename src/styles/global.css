@@ -26,9 +26,9 @@
 
 /* Patrones que Tailwind no puede generar, los definimos como clases normales */
 .bg-dither {
-  background-image: radial-gradient(#000 1px, transparent 0);
-  background-size: 2px 2px;
-  background-color: #ffffff;
+  background-image: radial-gradient(circle, #000 1.5px, transparent 1.5px);
+  background-size: 4px 4px;
+  background-color: #ffffff !important;
 }
 
 .title-bar-stripes {
@@ -88,4 +88,6 @@ body {
   margin: 0;
   overflow: hidden;
   user-select: none;
+  background-color: #ffffff;
+  zoom: 1.75;
 }
