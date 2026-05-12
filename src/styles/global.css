@@ -81,6 +81,7 @@
 }
 
 * {
+  cursor: none !important;
   box-sizing: border-box;
 }
 
@@ -89,4 +90,15 @@ body {
   overflow: hidden;
   user-select: none;
   background-color: #ffffff;
+}
+
+#retro-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 12px;
+  height: 20px;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-1px, -1px);
 }
