@@ -16,17 +16,19 @@ const total = computers.length;
         >
           <div
             class="border-b-2 border-primary p-3 flex items-center justify-center bg-surface-container-highest"
-            style="height: 220px;"
+            style="height: 140px;"
           >
             <div
-              id="museum-image"
-              class="w-full h-full border-2 border-primary flex items-center justify-center bg-surface"
+              class="border-b-2 border-primary flex items-center justify-center bg-white"
+              style="height: 140px;"
             >
-              <span
-                class="material-symbols-outlined"
-                style="font-size: 80px;"
-                id="museum-icon">computer</span
-              >
+              <img
+                id="museum-img"
+                src="/images/eniac.png"
+                alt="ENIAC"
+                class="w-full h-full object-contain"
+                style="filter: grayscale(100%); mix-blend-mode: multiply;"
+              />
             </div>
           </div>
 
@@ -188,8 +190,8 @@ const total = computers.length;
       `Card ${index + 1} of ${data.length}`;
     document.getElementById("museum-id").textContent =
       `ID: ${String(index + 1).padStart(4, "0")}`;
-    document.getElementById("museum-icon").textContent =
-      iconMap[c.type] || "computer";
+    document.getElementById("museum-img").src = `/images/${c.id}.png`;
+    document.getElementById("museum-img").alt = c.name;
     document.getElementById("mspec-cpu").textContent = c.cpu;
     document.getElementById("mspec-ram").textContent = c.ram;
     document.getElementById("mspec-speed").textContent = c.cpuSpeed;
