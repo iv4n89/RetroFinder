@@ -1,0 +1,128 @@
+---
+import RetroLayout from '../layouts/RetroLayout.astro'
+import Window from '../components/Window.astro'
+---
+
+<RetroLayout title="Terminal" activePage="terminal">
+  <div class="flex items-center justify-center h-full p-6">
+
+    <Window title="RetroOS Terminal v1.0" class="w-full max-w-2xl" footer="Ready">
+
+      <div
+        id="terminal-body"
+        class="bg-primary text-on-primary font-mono text-body-lg p-4 overflow-y-auto"
+        style="height: 420px;"
+      >
+        <div class="mb-4">
+          <p>RetroOS v1.0 (c) 1984 RetroComputing Corp.</p>
+          <p>64KB RAM System OK</p>
+          <p>Drives detected: [A:] [B:] [NETWORK]</p>
+        </div>
+
+        <div class="flex flex-col gap-1 mb-4 opacity-70">
+          <div class="flex gap-3">
+            <span>[0.001s]</span><span>Loading Kernal... OK</span>
+          </div>
+          <div class="flex gap-3">
+            <span>[0.024s]</span><span>Initializing Desktop Environment...</span>
+          </div>
+          <div class="flex gap-3">
+            <span>[0.089s]</span><span>Memory Check... OK</span>
+          </div>
+          <div class="flex gap-3">
+            <span>[0.112s]</span><span>mounting /dev/disk0 at /system</span>
+          </div>
+        </div>
+
+        <p class="mb-4">Type <span class="bg-on-primary text-primary px-1">HELP</span> for a list of available commands.</p>
+
+        <div id="terminal-history"></div>
+
+        <div class="flex items-center gap-2 mt-2">
+          <span class="font-bold">C:\&gt;</span>
+          <span id="terminal-input-display" class="flex-1"></span>
+          <span class="cursor-blink bg-on-primary text-primary px-[3px]">█</span>
+        </div>
+      </div>
+
+    </Window>
+
+  </div>
+</RetroLayout>
+
+<script is:inline define:vars={{ commands: {
+  HELP: `Comandos disponibles:\n  HELP     - muestra esta ayuda\n  DIR      - lista los archivos\n  CLS      - limpia la pantalla\n  VER      - versión del sistema\n  DATE     - fecha actual\n  HISTORY  - historia de la retroinformática\n  LIST     - lista de ordenadores históricos`,
+  DIR: `Volumen en unidad C: RETRO_HD\n\nDIRECTORIO DE C:\\\n\n  SYSTEM/\n  ARCHIVE/\n  MUSEUM/\n  README.TXT          512 bytes\n  HISTORY.DAT       4.096 bytes\n\n  2 archivo(s)       4.608 bytes\n  2 directorio(s)   59.392 bytes libres`,
+  CLS: '__CLEAR__',
+  VER: `RetroOS Versión 1.0\nCopyright (c) 1984 RetroComputing Corp.\nAll rights reserved.`,
+  DATE: `__DATE__`,
+  HISTORY: `=== HISTORIA DE LA RETROINFORMÁTICA ===\n\n1945  ENIAC — primer ordenador electrónico\n1947  Invención del transistor (Bell Labs)\n1971  Intel 4004 — primer microprocesador\n1975  Altair 8800 — el big bang del PC\n1977  Apple II, TRS-80, Commodore PET\n1981  IBM PC — nace el estándar\n1982  Commodore 64 — el más vendido\n1984  Macintosh — la GUI para todos\n1985  Amiga y Atari ST — era de 16 bits\n1993  Pentium — era multimedia`,
+  LIST: `=== ORDENADORES EN EL ARCHIVO ===\n\n  ENIAC (1945)              Mainframe\n  Altair 8800 (1975)        Micro\n  Apple II (1977)           Personal\n  TRS-80 Model I (1977)     Personal\n  IBM PC (1981)             Personal\n  Commodore 64 (1982)       Personal\n  Apple Lisa (1983)         GUI Station\n  Macintosh 128K (1984)     Revolution\n  Amiga 1000 (1985)         Personal\n  Atari ST (1985)           Personal`,
+}}}>
+
+  const body     = document.getElementById('terminal-body')
+  const history  = document.getElementById('terminal-history')
+  const display  = document.getElementById('terminal-input-display')
+
+  let input = ''
+
+  function printLine(text, isCommand = false) {
+    const lines = text.split('\n')
+    lines.forEach(line => {
+      const p = document.createElement('p')
+      p.className = isCommand
+        ? 'flex gap-2 mb-1'
+        : 'opacity-70 mb-[2px] whitespace-pre'
+      p.textContent = isCommand ? `C:\\> ${line}` : line
+      history.appendChild(p)
+    })
+    body.scrollTop = body.scrollHeight
+  }
+
+  function runCommand(cmd) {
+    const key = cmd.trim().toUpperCase().split(' ')[0]
+    printLine(cmd, true)
+
+    if (!key) return
+
+    const result = commands[key]
+
+    if (!result) {
+      printLine(`'${cmd}' no se reconoce como comando interno.\nEscriba HELP para ver los comandos disponibles.`)
+      return
+    }
+
+    if (result === '__CLEAR__') {
+      history.innerHTML = ''
+      return
+    }
+
+    if (result === '__DATE__') {
+      const now = new Date()
+      printLine(`Fecha actual: ${now.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`)
+      return
+    }
+
+    printLine(result)
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      runCommand(input)
+      input = ''
+      display.textContent = ''
+      return
+    }
+
+    if (e.key === 'Backspace') {
+      input = input.slice(0, -1)
+      display.textContent = input
+      return
+    }
+
+    if (e.key.length === 1) {
+      input += e.key.toUpperCase()
+      display.textContent = input
+    }
+  })
+</script>
