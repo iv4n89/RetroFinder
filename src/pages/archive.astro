@@ -13,67 +13,67 @@ import { computers } from "../data/computer";
       class="flex-1 min-h-0 overflow-hidden"
     >
       <div class="flex flex-col h-full">
-      <div
-        class="border-b-2 border-primary px-3 py-1 flex justify-between items-center bg-surface shrink-0"
-      >
-        <span class="font-mono text-label-sm"
-          >{computers.length} Items Found</span
+        <div
+          class="border-b-2 border-primary px-3 py-1 flex justify-between items-center bg-surface shrink-0"
         >
-        <span class="font-mono text-label-sm">Sorted by Chronology</span>
-        <span class="font-mono text-label-sm">Storage: A:\HISTORICAL\</span>
-      </div>
+          <span class="font-mono text-label-sm"
+            >{computers.length} Items Found</span
+          >
+          <span class="font-mono text-label-sm">Sorted by Chronology</span>
+          <span class="font-mono text-label-sm">Storage: A:\HISTORICAL\</span>
+        </div>
 
-      <!-- TABLE -->
-      <div class="flex-1 min-h-0 overflow-y-auto">
-        <table class="w-full border-collapse">
-          <thead class="sticky top-0 bg-surface z-10">
-            <tr class="border-b border-primary">
-              <th
-                class="text-left font-mono text-label-sm px-3 py-2 border-r border-primary w-20"
-                >Year</th
-              >
-              <th
-                class="text-left font-mono text-label-sm px-3 py-2 border-r border-primary"
-                >Machine Name</th
-              >
-              <th
-                class="text-left font-mono text-label-sm px-3 py-2 border-r border-primary w-32"
-                >Manufacturer</th
-              >
-              <th class="text-left font-mono text-label-sm px-3 py-2 w-28"
-                >Type</th
-              >
-            </tr>
-          </thead>
-
-          <tbody id="computer-table-body">
-            {
-              computers.map((computer) => (
-                <tr
-                  class="border-b border-primary border-dotted cursor-pointer hover:bg-primary hover:text-on-primary transition-none group computer-row"
-                  data-id={computer.id}
+        <!-- TABLE -->
+        <div class="flex-1 min-h-0 overflow-y-auto">
+          <table class="w-full border-collapse">
+            <thead class="sticky top-0 bg-surface z-10">
+              <tr class="border-b border-primary">
+                <th
+                  class="text-left font-mono text-label-sm px-3 py-2 border-r border-primary w-20"
+                  >Year</th
                 >
-                  <td class="font-mono text-label-lg px-3 py-2 border-r border-primary border-dotted">
-                    {computer.year}
-                  </td>
-                  <td class="font-mono text-label-lg px-3 py-2 border-r border-primary border-dotted">
-                    <span class="material-symbols-outlined text-xs mr-1">
-                      commit
-                    </span>
-                    {computer.name}
-                  </td>
-                  <td class="font-mono text-label-sm px-3 py-2 border-r border-primary border-dotted opacity-70 group-hover:opacity-100">
-                    {computer.manufacturer}
-                  </td>
-                  <td class="font-mono text-label-sm px-3 py-2 italic">
-                    {computer.type}
-                  </td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
-      </div>
+                <th
+                  class="text-left font-mono text-label-sm px-3 py-2 border-r border-primary"
+                  >Machine Name</th
+                >
+                <th
+                  class="text-left font-mono text-label-sm px-3 py-2 border-r border-primary w-32"
+                  >Manufacturer</th
+                >
+                <th class="text-left font-mono text-label-sm px-3 py-2 w-28"
+                  >Type</th
+                >
+              </tr>
+            </thead>
+
+            <tbody id="computer-table-body">
+              {
+                computers.map((computer) => (
+                  <tr
+                    class="border-b border-primary border-dotted cursor-pointer hover:bg-primary hover:text-on-primary transition-none group computer-row"
+                    data-id={computer.id}
+                  >
+                    <td class="font-mono text-label-lg px-3 py-2 border-r border-primary border-dotted">
+                      {computer.year}
+                    </td>
+                    <td class="font-mono text-label-lg px-3 py-2 border-r border-primary border-dotted">
+                      <span class="material-symbols-outlined text-xs mr-1">
+                        commit
+                      </span>
+                      {computer.name}
+                    </td>
+                    <td class="font-mono text-label-sm px-3 py-2 border-r border-primary border-dotted opacity-70 group-hover:opacity-100">
+                      {computer.manufacturer}
+                    </td>
+                    <td class="font-mono text-label-sm px-3 py-2 italic">
+                      {computer.type}
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
     </Window>
 
@@ -139,48 +139,48 @@ import { computers } from "../data/computer";
       </div>
     </Window>
   </div>
-</RetroLayout>
 
-<script is:inline>
-  const data = JSON.parse(document.getElementById("computer-data").textContent);
+  <script is:inline define:vars={{ computers }}>
+    const rows = document.querySelectorAll(".computer-row");
+    const detailEmpty = document.getElementById("detail-empty");
+    const detailContent = document.getElementById("detail-content");
 
-  const rows = document.querySelectorAll(".computer-row");
-  const detailEmpty = document.getElementById("detail-empty");
-  const detailContent = document.getElementById("detail-content");
+    rows.forEach((row) => {
+      row.addEventListener("click", () => {
+        const id = row.dataset.id;
+        const computer = computers.find((c) => c.id === id);
+        if (!computer) return;
 
-  rows.forEach((row) => {
-    row.addEventListener("click", () => {
-      const id = row.dataset.id;
-      const computer = data.find((c) => c.id === id);
-      if (!computer) return;
+        rows.forEach((r) =>
+          r.classList.remove("bg-primary", "text-on-primary"),
+        );
+        row.classList.add("bg-primary", "text-on-primary");
 
-      rows.forEach((r) => r.classList.remove("bg-primary", "text-on-primary"));
-      row.classList.add("bg-primary", "text-on-primary");
+        detailEmpty.classList.add("hidden");
+        detailContent.classList.remove("hidden");
+        detailContent.classList.add("flex");
 
-      detailEmpty.classList.add("hidden");
-      detailContent.classList.remove("hidden");
-      detailContent.classList.add("flex");
-
-      document.getElementById("detail-name").textContent =
-        `${computer.name} (${computer.year})`;
-      document.getElementById("detail-type").textContent =
-        computer.type.toUpperCase();
-      document.getElementById("detail-description").textContent =
-        computer.description;
-      document.getElementById("detail-significance").textContent =
-        computer.significance;
-      document.getElementById("spec-cpu").textContent = computer.cpu;
-      document.getElementById("spec-speed").textContent = computer.cpuSpeed;
-      document.getElementById("spec-ram").textContent = computer.ram;
-      document.getElementById("spec-os").textContent = computer.os;
-      document.getElementById("spec-price").textContent = computer.price;
+        document.getElementById("detail-name").textContent =
+          `${computer.name} (${computer.year})`;
+        document.getElementById("detail-type").textContent =
+          computer.type.toUpperCase();
+        document.getElementById("detail-description").textContent =
+          computer.description;
+        document.getElementById("detail-significance").textContent =
+          computer.significance;
+        document.getElementById("spec-cpu").textContent = computer.cpu;
+        document.getElementById("spec-speed").textContent = computer.cpuSpeed;
+        document.getElementById("spec-ram").textContent = computer.ram;
+        document.getElementById("spec-os").textContent = computer.os;
+        document.getElementById("spec-price").textContent = computer.price;
+      });
     });
-  });
-</script>
+  </script>
 
-<script
-  id="computer-data"
-  type="application/json"
-  is:inline
-  set:html={JSON.stringify(computers)}
-/>
+  <script
+    id="computer-data"
+    type="application/json"
+    is:inline
+    set:html={JSON.stringify(computers)}
+  />
+</RetroLayout>
