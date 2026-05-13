@@ -112,7 +112,8 @@ import { computers } from "../data/computer";
     function closeWindow(id) {
       const wrapper = document.getElementById(`window-${id}-wrapper`);
       if (!wrapper) return;
-      if (wrapper) wrapper.classList.add("hidden");
+      wrapper.classList.remove("window-minimized");
+      wrapper.classList.add("hidden");
 
       // reset position
       const pos = defaultPositions[id];
@@ -144,8 +145,13 @@ import { computers } from "../data/computer";
         isDragging = true;
         startX = e.clientX;
         startY = e.clientY;
-        startLeft = parseInt(wrapper.style.left) || 0;
-        startTop = parseInt(wrapper.style.top) || 0;
+
+        const rect = wrapper.getBoundingClientRect();
+        startLeft = rect.left;
+        startTop = rect.top;
+
+        wrapper.style.left = startLeft + "px";
+        wrapper.style.top = startTop + "px";
 
         topZ++;
         wrapper.style.zIndex = topZ;
@@ -166,6 +172,68 @@ import { computers } from "../data/computer";
 
     Object.values(wrappers).forEach((wrapper) => {
       if (wrapper) makeDraggable(wrapper);
+    });
+
+    // ── MINIMIZE ─────────────────────────────────────────
+    const minimizedSlots = { archive: 0, museum: 1, terminal: 2 };
+
+    function minimizeWindow(id) {
+      const wrapper = document.getElementById(`window-${id}-wrapper`);
+      if (!wrapper) return;
+
+      const rect = wrapper.getBoundingClientRect();
+      wrapper.dataset.prevTop = `${rect.top}px`;
+      wrapper.dataset.prevLeft = `${rect.left}px`;
+
+      const slot = minimizedSlots[id] ?? 0;
+      const slotWidth = 168;
+      const rightOffset = 16;
+      const bottomOffset = 8;
+
+      wrapper.style.top = `calc(100dvh - ${bottomOffset}px - 60px)`;
+      wrapper.style.left = `calc(100dvw - ${rightOffset}px - ${slotWidth * (slot + 1)}px)`;
+      wrapper.style.zIndex = 25;
+      wrapper.classList.add("window-minimized");
+    }
+
+    function restoreWindow(id) {
+      const wrapper = document.getElementById(`window-${id}-wrapper`);
+      if (!wrapper) return;
+
+      wrapper.style.top =
+        wrapper.dataset.prevTop || defaultPositions[id].top + "px";
+      wrapper.style.left =
+        wrapper.dataset.prevLeft || defaultPositions[id].left + "px";
+      wrapper.classList.remove("window-minimized");
+      topZ++;
+      wrapper.style.zIndex = topZ;
+    }
+
+    document.querySelectorAll(".window-title-bar").forEach((bar) => {
+      bar.addEventListener("dblclick", (e) => {
+        if (e.target.closest(".window-close-btn")) return;
+        if (e.target.closest(".window-minimize-btn")) return;
+        const wrapper = bar.closest('[id$="-wrapper"]');
+        if (!wrapper) return;
+        const id = wrapper.id.replace("window-", "").replace("-wrapper", "");
+        if (wrapper.classList.contains("window-minimized")) {
+          restoreWindow(id);
+        }
+      });
+    });
+
+    document.querySelectorAll(".window-minimize-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.minimize;
+        if (!id) return;
+        const wrapper = document.getElementById(`window-${id}-wrapper`);
+        if (!wrapper) return;
+        if (wrapper.classList.contains("window-minimized")) {
+          restoreWindow(id);
+        } else {
+          minimizeWindow(id);
+        }
+      });
     });
 
     // ── ARCHIVE ──────────────────────────────────────────
