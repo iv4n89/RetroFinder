@@ -49,22 +49,24 @@ import { computers } from "../data/computer";
   <!-- WINDOWS — hidden by default -->
   <div
     id="window-archive-wrapper"
-    class="hidden absolute z-20 flex flex-col gap-4 max-w-4xl mx-auto max-h-[90dvh] my-auto"
-    style="top: 16px; bottom: 16px; right: 16px; left: 16px;"
+    class="hidden absolute z-20 flex flex-col gap-4 max-h-[90dvh]"
+    style="top: 40px; left: 160px; width: 800px;"
   >
     <ArchiveWindow />
   </div>
 
   <div
     id="window-museum-wrapper"
-    class="hidden absolute inset-0 z-20 flex items-center justify-center"
+    class="hidden absolute z-20"
+    style="top: 40px; left: 120px;"
   >
     <MuseumWindow />
   </div>
 
   <div
     id="window-terminal-wrapper"
-    class="hidden absolute inset-0 z-20 flex items-center justify-center"
+    class="hidden absolute z-20"
+    style="top: 60px; left: 160px;"
   >
     <TerminalWindow />
   </div>
@@ -101,9 +103,21 @@ import { computers } from "../data/computer";
       }
     }
 
+    const defaultPositions = {
+      archive: { top: 40, left: 160 },
+      museum: { top: 40, left: 120 },
+      terminal: { top: 60, left: 160 },
+    };
+
     function closeWindow(id) {
       const wrapper = document.getElementById(`window-${id}-wrapper`);
+      if (!wrapper) return;
       if (wrapper) wrapper.classList.add("hidden");
+
+      // reset position
+      const pos = defaultPositions[id];
+      wrapper.style.top = `${pos.top}px`;
+      wrapper.style.left = `${pos.left}px`;
     }
 
     document.querySelectorAll(".desktop-icon").forEach((icon) => {
@@ -112,6 +126,46 @@ import { computers } from "../data/computer";
 
     document.querySelectorAll(".window-close-btn").forEach((btn) => {
       btn.addEventListener("click", () => closeWindow(btn.dataset.close));
+    });
+
+    // ── DRAG ───────────────────────────────────────────
+    let topZ = 30;
+
+    function makeDraggable(wrapper) {
+      const titleBar = wrapper.querySelector(".window-title-bar");
+      if (!titleBar) return;
+
+      let isDragging = false;
+      let startX, startY, startLeft, startTop;
+
+      titleBar.addEventListener("mousedown", (e) => {
+        if (e.target.closest(".window-close-btn")) return;
+
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = parseInt(wrapper.style.left) || 0;
+        startTop = parseInt(wrapper.style.top) || 0;
+
+        topZ++;
+        wrapper.style.zIndex = topZ;
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        wrapper.style.left = `${startLeft + dx}px`;
+        wrapper.style.top = `${startTop + dy}px`;
+      });
+
+      document.addEventListener("mouseup", () => {
+        isDragging = false;
+      });
+    }
+
+    Object.values(wrappers).forEach((wrapper) => {
+      if (wrapper) makeDraggable(wrapper);
     });
 
     // ── ARCHIVE ──────────────────────────────────────────
