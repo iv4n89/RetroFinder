@@ -1,0 +1,51 @@
+---
+import Window from "../Window.astro";
+---
+
+<Window
+  title="RetroOS Terminal V1.0"
+  id="window-terminal"
+  class="w-full max-w-2xl"
+  footer="Ready"
+  windowId="terminal"
+>
+  <div
+    id="terminal-body"
+    class="bg-primary text-on-primary font-mono text-body-lg p-4 overflow-y-auto"
+    style="height: 420px;"
+  >
+    <div class="mb-4">
+      <p>RetroOS v1.0 (c) 1984 RetroComputing Corp.</p>
+      <p>64KB RAM System OK</p>
+      <p>Drives detected: [A:] [B:] [NETWORK]</p>
+    </div>
+
+    <div class="flex flex-col gap-1 mb-4 opacity-70">
+      <div class="flex gap-3">
+        <span>[0.001s]</span><span>Loading Kernel... OK</span>
+      </div>
+      <div class="flex gap-3">
+        <span>[0.024s]</span><span>Initializing Desktop Environment...</span>
+      </div>
+      <div class="flex gap-3">
+        <span>[0.089s]</span><span>Memory Check... OK</span>
+      </div>
+      <div class="flex gap-3">
+        <span>[0.112s]</span><span>mounting /dev/disk0 at /system</span>
+      </div>
+    </div>
+
+    <p class="mb-4">
+      Type <span class="bg-on-primary text-primary px-1">HELP</span> for a list of
+      available commands.
+    </p>
+
+    <div id="terminal-history"></div>
+
+    <div class="flex items-center gap-2 mt-2">
+      <span class="font-bold">C:\&gt;</span>
+      <span id="terminal-input-display" class="flex-1"></span>
+      <span class="cursor-blink bg-on-primary text-primary px-[3px]">█</span>
+    </div>
+  </div>
+</Window>

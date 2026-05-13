@@ -1,17 +1,25 @@
 ---
 import RetroLayout from "../layouts/RetroLayout.astro";
-import Window from "../components/Window.astro";
+import ArchiveWindow from "../components/windows/ArchiveWindow.astro";
+import MuseumWindow from "../components/windows/MuseumWindow.astro";
+import TerminalWindow from "../components/windows/TerminalWindow.astro";
+import { computers } from "../data/computer";
 ---
 
 <RetroLayout title="Desktop" activePage="desktop">
-  <div class="absolute right-6 top-6 flex flex-col gap-6 items-center">
+  <!-- Icons -->
+  <div class="absolute right-6 top-6 flex flex-col gap-6 items-center z-10">
     {
       [
-        { icon: "save", label: "Hard Disk" },
-        { icon: "folder", label: "System Folder" },
-        { icon: "delete", label: "Trash" },
+        { icon: "history_edu", label: "Archive", id: "archive" },
+        { icon: "museum", label: "Museum", id: "museum" },
+        { icon: "terminal", label: "Terminal", id: "terminal" },
+        { icon: "delete", label: "Trash", id: "trash" },
       ].map((item) => (
-        <div class="group cursor-pointer flex flex-col items-center gap-1">
+        <div
+          class="group cursor-pointer flex flex-col items-center gap-1 desktop-icon"
+          data-window={item.id}
+        >
           <div class="w-12 h-12 flex items-center justify-center border border-primary bg-surface group-hover:bg-primary group-hover:text-on-primary">
             <span class="material-symbols-outlined" style="font-size: 32px;">
               {item.icon}
@@ -25,86 +33,8 @@ import Window from "../components/Window.astro";
     }
   </div>
 
-  <div class="flex items-center justify-center h-full">
-    <Window
-      title="RetroFinder"
-      footer="4 items, 15K available"
-      class="w-full max-w-xl"
-    >
-      <div class="p-4 grid grid-cols-3 gap-4">
-        {
-          [
-            {
-              icon: "history_edu",
-              label: "Archive",
-              href: "/archive",
-              desc: "Historical records",
-            },
-            {
-              icon: "museum",
-              label: "Museum",
-              href: "/museum",
-              desc: "Hardware collection",
-            },
-            {
-              icon: "terminal",
-              label: "Terminal",
-              href: "/terminal",
-              desc: "Command line",
-            },
-          ].map((item) => (
-            <a
-              href={item.href}
-              class="group border border-primary p-4 flex flex-col items-center gap-2 bg-surface hover:bg-primary hover:text-on-primary cursor-pointer no-underline text-primary"
-            >
-              <span class="material-symbols-outlined" style="font-size: 48px;">
-                {item.icon}
-              </span>
-              <span class="font-mono text-label-lg">{item.label}</span>
-              <span class="font-mono text-label-sm opacity-60 group-hover:opacity-100 text-center">
-                {item.desc}
-              </span>
-            </a>
-          ))
-        }
-
-        <div class="col-span-3 border border-primary p-4 flex flex-col gap-3">
-          <div
-            class="flex justify-between items-center border-b border-primary border-dotted pb-2"
-          >
-            <span class="font-mono text-label-lg font-bold"
-              >System Statistics</span
-            >
-            <span class="material-symbols-outlined">analytics</span>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            {
-              [
-                { label: "Computers in archive", value: "10", pct: "60%" },
-                { label: "Years of history", value: "48", pct: "90%" },
-              ].map((stat) => (
-                <div class="flex flex-col gap-1">
-                  <div class="flex justify-between font-mono text-label-sm">
-                    <span>{stat.label}</span>
-                    <span>{stat.value}</span>
-                  </div>
-                  <div class="h-2 border border-primary w-full bg-surface relative">
-                    <div
-                      class="absolute left-0 top-0 h-full bg-primary"
-                      style={`width: ${stat.pct}`}
-                    />
-                  </div>
-                </div>
-              ))
-            }
-          </div>
-        </div>
-      </div>
-    </Window>
-  </div>
-
   <div
-    class="absolute bottom-8 left-26 w-56 bg-surface border-2 border-primary opacity-80 pointer-events-none"
+    class="absolute bottom-8 left-26 w-56 bg-surface border-2 border-primary opacity-80 pointer-events-none z-10"
   >
     <div
       class="h-titlebar flex items-center justify-center border-b-2 border-primary"
@@ -115,4 +45,229 @@ import Window from "../components/Window.astro";
       Don't forget to back up your 400K floppy disks today.
     </div>
   </div>
+
+  <!-- WINDOWS — hidden by default -->
+  <div
+    id="window-archive-wrapper"
+    class="hidden absolute z-20 flex flex-col gap-4 max-w-4xl mx-auto max-h-[90dvh] my-auto"
+    style="top: 16px; bottom: 16px; right: 16px; left: 16px;"
+  >
+    <ArchiveWindow />
+  </div>
+
+  <div
+    id="window-museum-wrapper"
+    class="hidden absolute inset-0 z-20 flex items-center justify-center"
+  >
+    <MuseumWindow />
+  </div>
+
+  <div
+    id="window-terminal-wrapper"
+    class="hidden absolute inset-0 z-20 flex items-center justify-center"
+  >
+    <TerminalWindow />
+  </div>
 </RetroLayout>
+
+<script is:inline define:vars={{ computers }}>
+  window._computers = computers;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const computers = window._computers;
+    // ── WRAPPERS ─────────────────────────────────────────
+    const wrappers = {
+      archive: document.getElementById("window-archive-wrapper"),
+      museum: document.getElementById("window-museum-wrapper"),
+      terminal: document.getElementById("window-terminal-wrapper"),
+    };
+
+    // ── WINDOW MANAGEMENT ────────────────────────────────
+    let museumInitialized = false;
+    let archiveInitialized = false;
+
+    function openWindow(id) {
+      if (!wrappers[id]) return;
+      wrappers[id].classList.remove("hidden");
+
+      if (id === "archive" && !archiveInitialized) {
+        initArchive();
+        archiveInitialized = true;
+      }
+
+      if (id === "museum" && !museumInitialized) {
+        renderMuseum(0);
+        museumInitialized = true;
+      }
+    }
+
+    function closeWindow(id) {
+      const wrapper = document.getElementById(`window-${id}-wrapper`);
+      if (wrapper) wrapper.classList.add("hidden");
+    }
+
+    document.querySelectorAll(".desktop-icon").forEach((icon) => {
+      icon.addEventListener("click", () => openWindow(icon.dataset.window));
+    });
+
+    document.querySelectorAll(".window-close-btn").forEach((btn) => {
+      btn.addEventListener("click", () => closeWindow(btn.dataset.close));
+    });
+
+    // ── ARCHIVE ──────────────────────────────────────────
+    function initArchive() {
+      const rows = document.querySelectorAll(".computer-row");
+      const detailEmpty = document.getElementById("detail-empty");
+      const detailContent = document.getElementById("detail-content");
+
+      rows.forEach((row) => {
+        row.addEventListener("click", () => {
+          const computer = computers.find((c) => c.id === row.dataset.id);
+          if (!computer) return;
+
+          rows.forEach((r) =>
+            r.classList.remove("bg-primary", "text-on-primary"),
+          );
+          row.classList.add("bg-primary", "text-on-primary");
+
+          detailEmpty.classList.add("hidden");
+          detailContent.classList.remove("hidden");
+          detailContent.classList.add("flex");
+
+          document.getElementById("detail-name").textContent =
+            `${computer.name} (${computer.year})`;
+          document.getElementById("detail-type").textContent =
+            computer.type.toUpperCase();
+          document.getElementById("detail-description").textContent =
+            computer.description;
+          document.getElementById("detail-significance").textContent =
+            computer.significance;
+          document.getElementById("spec-cpu").textContent = computer.cpu;
+          document.getElementById("spec-speed").textContent = computer.cpuSpeed;
+          document.getElementById("spec-ram").textContent = computer.ram;
+          document.getElementById("spec-os").textContent = computer.os;
+          document.getElementById("spec-price").textContent = computer.price;
+        });
+      });
+    }
+
+    // ── MUSEUM ───────────────────────────────────────────
+    let current = 0;
+
+    function renderMuseum(index) {
+      const c = computers[index];
+      document.getElementById("museum-name").textContent =
+        `${c.name} (${c.year})`;
+      document.getElementById("museum-type").textContent = c.type.toUpperCase();
+      document.getElementById("museum-description").textContent = c.description;
+      document.getElementById("museum-counter").textContent =
+        `Card ${index + 1} of ${computers.length}`;
+      document.getElementById("museum-id").textContent =
+        `ID: ${String(index + 1).padStart(4, "0")}`;
+      document.getElementById("mspec-cpu").textContent = c.cpu;
+      document.getElementById("mspec-ram").textContent = c.ram;
+      document.getElementById("mspec-speed").textContent = c.cpuSpeed;
+      document.getElementById("mspec-os").textContent = c.os;
+      document.getElementById("mspec-price").textContent = c.price;
+      const img = document.getElementById("museum-img");
+      if (img) {
+        img.src = `/images/${c.id}.png`;
+        img.alt = c.name;
+      }
+    }
+
+    document.getElementById("btn-next")?.addEventListener("click", () => {
+      current = (current + 1) % computers.length;
+      renderMuseum(current);
+    });
+
+    document.getElementById("btn-prev")?.addEventListener("click", () => {
+      current = (current - 1 + computers.length) % computers.length;
+      renderMuseum(current);
+    });
+
+    document.getElementById("museum-search")?.addEventListener("input", (e) => {
+      const query = e.target.value.toLowerCase();
+      if (!query) return;
+      const index = computers.findIndex((c) =>
+        c.name.toLowerCase().includes(query),
+      );
+      if (index !== -1) {
+        current = index;
+        renderMuseum(current);
+      }
+    });
+
+    // ── TERMINAL ─────────────────────────────────────────
+    const commands = {
+      HELP: `Available commands:\n  HELP     - show this help\n  DIR      - list files\n  CLS      - clear screen\n  VER      - system version\n  DATE     - current date\n  HISTORY  - computing history\n  LIST     - list computers`,
+      DIR: `Volume in drive C: RETRO_HD\n\nDirectory of C:\\\n\n  SYSTEM/\n  ARCHIVE/\n  MUSEUM/\n  README.TXT          512 bytes\n  HISTORY.DAT       4.096 bytes\n\n  2 file(s)       4.608 bytes\n  2 dir(s)       59.392 bytes free`,
+      CLS: "__CLEAR__",
+      VER: `RetroOS Version 1.0\nCopyright (c) 1984 RetroComputing Corp.`,
+      DATE: "__DATE__",
+      HISTORY: `=== HISTORY OF RETROCOMPUTING ===\n\n1945  ENIAC — first electronic computer\n1947  Transistor invented (Bell Labs)\n1971  Intel 4004 — first microprocessor\n1975  Altair 8800 — the big bang of PC\n1977  Apple II, TRS-80, Commodore PET\n1981  IBM PC — the standard is born\n1982  Commodore 64 — best seller ever\n1984  Macintosh — GUI for everyone\n1985  Amiga & Atari ST — 16-bit era\n1993  Pentium — multimedia era`,
+      LIST: `=== COMPUTERS IN ARCHIVE ===\n\n  ENIAC (1945)              Mainframe\n  Altair 8800 (1975)        Micro\n  Apple II (1977)           Personal\n  TRS-80 Model I (1977)     Personal\n  IBM PC (1981)             Personal\n  Commodore 64 (1982)       Personal\n  Apple Lisa (1983)         GUI Station\n  Macintosh 128K (1984)     Revolution\n  Amiga 1000 (1985)         Personal\n  Atari ST (1985)           Personal`,
+    };
+
+    const terminalBody = document.getElementById("terminal-body");
+    const terminalHistory = document.getElementById("terminal-history");
+    const terminalDisplay = document.getElementById("terminal-input-display");
+    let terminalInput = "";
+
+    function printLine(text, isCommand = false) {
+      text.split("\n").forEach((line) => {
+        const p = document.createElement("p");
+        p.className = isCommand
+          ? "flex gap-2 mb-1"
+          : "opacity-70 mb-[2px] whitespace-pre";
+        p.textContent = isCommand ? `C:\\> ${line}` : line;
+        terminalHistory.appendChild(p);
+      });
+      terminalBody.scrollTop = terminalBody.scrollHeight;
+    }
+
+    function runCommand(cmd) {
+      const key = cmd.trim().toUpperCase().split(" ")[0];
+      printLine(cmd, true);
+      if (!key) return;
+      const result = commands[key];
+      if (!result) {
+        printLine(
+          `'${cmd}' is not recognized. Type HELP for available commands.`,
+        );
+        return;
+      }
+      if (result === "__CLEAR__") {
+        terminalHistory.innerHTML = "";
+        return;
+      }
+      if (result === "__DATE__") {
+        printLine(
+          `Current date: ${new Date().toLocaleDateString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`,
+        );
+        return;
+      }
+      printLine(result);
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (!wrappers.terminal?.classList.contains("hidden")) {
+        if (e.key === "Enter") {
+          runCommand(terminalInput);
+          terminalInput = "";
+          terminalDisplay.textContent = "";
+          return;
+        }
+        if (e.key === "Backspace") {
+          terminalInput = terminalInput.slice(0, -1);
+          terminalDisplay.textContent = terminalInput;
+          return;
+        }
+        if (e.key.length === 1) {
+          terminalInput += e.key.toUpperCase();
+          terminalDisplay.textContent = terminalInput;
+        }
+      }
+    });
+  });
+</script>
