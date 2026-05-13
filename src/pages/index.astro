@@ -136,7 +136,12 @@ import { computers } from "../data/computer";
       let highestZ = 0;
       let highestId = "desktop";
       Object.entries(wrappers).forEach(([k, w]) => {
-        if (k !== id && w && !w.classList.contains("hidden")) {
+        if (
+          k !== id &&
+          w &&
+          !w.classList.contains("hidden") &&
+          !w.classList.contains("window-minimized")
+        ) {
           const z = parseInt(w.style.zIndex) || 0;
           if (z > highestZ) {
             highestZ = z;
@@ -228,7 +233,9 @@ import { computers } from "../data/computer";
       wrapper.addEventListener("mousedown", () => {
         topZ++;
         wrapper.style.zIndex = topZ;
-        setActiveNav(id);
+        if (!wrapper.classList.contains("window-minimized")) {
+          setActiveNav(id);
+        }
       });
     });
 
@@ -256,6 +263,24 @@ import { computers } from "../data/computer";
       wrapper.style.left = `calc(100dvw - ${rightOffset}px - ${slotWidth * (slot + 1)}px)`;
       wrapper.style.zIndex = 25;
       wrapper.classList.add("window-minimized");
+
+      let highestZ = 0;
+      let highestId = "desktop";
+      Object.entries(wrappers).forEach(([k, w]) => {
+        if (
+          k !== id &&
+          w &&
+          !w.classList.contains("hidden") &&
+          !w.classList.contains("window-minimized")
+        ) {
+          const z = parseInt(w.style.zIndex) || 0;
+          if (z > highestZ) {
+            highestZ = z;
+            highestId = k;
+          }
+        }
+      });
+      setActiveNav(highestId);
     }
 
     function restoreWindow(id) {
@@ -269,6 +294,8 @@ import { computers } from "../data/computer";
       wrapper.classList.remove("window-minimized");
       topZ++;
       wrapper.style.zIndex = topZ;
+
+      setActiveNav(id);
     }
 
     document.querySelectorAll(".window-title-bar").forEach((bar) => {
@@ -384,13 +411,14 @@ import { computers } from "../data/computer";
 
     // ── TERMINAL ─────────────────────────────────────────
     const commands = {
-      HELP: `Available commands:\n  HELP     - show this help\n  DIR      - list files\n  CLS      - clear screen\n  VER      - system version\n  DATE     - current date\n  HISTORY  - computing history\n  LIST     - list computers`,
+      HELP: `Available commands:\n  HELP     - show this help\n  DIR      - list files\n  CLS      - clear screen\n  VER      - system version\n  DATE     - current date\n  HISTORY  - computing history\n  LIST     - list computers\n  EXIT     - close terminal`,
       DIR: `Volume in drive C: RETRO_HD\n\nDirectory of C:\\\n\n  SYSTEM/\n  ARCHIVE/\n  MUSEUM/\n  README.TXT          512 bytes\n  HISTORY.DAT       4.096 bytes\n\n  2 file(s)       4.608 bytes\n  2 dir(s)       59.392 bytes free`,
       CLS: "__CLEAR__",
       VER: `RetroOS Version 1.0\nCopyright (c) 1984 RetroComputing Corp.`,
       DATE: "__DATE__",
       HISTORY: `=== HISTORY OF RETROCOMPUTING ===\n\n1945  ENIAC — first electronic computer\n1947  Transistor invented (Bell Labs)\n1971  Intel 4004 — first microprocessor\n1975  Altair 8800 — the big bang of PC\n1977  Apple II, TRS-80, Commodore PET\n1981  IBM PC — the standard is born\n1982  Commodore 64 — best seller ever\n1984  Macintosh — GUI for everyone\n1985  Amiga & Atari ST — 16-bit era\n1993  Pentium — multimedia era`,
       LIST: `=== COMPUTERS IN ARCHIVE ===\n\n  ENIAC (1945)              Mainframe\n  Altair 8800 (1975)        Micro\n  Apple II (1977)           Personal\n  TRS-80 Model I (1977)     Personal\n  IBM PC (1981)             Personal\n  Commodore 64 (1982)       Personal\n  Apple Lisa (1983)         GUI Station\n  Macintosh 128K (1984)     Revolution\n  Amiga 1000 (1985)         Personal\n  Atari ST (1985)           Personal`,
+      EXIT: "__EXIT__",
     };
 
     const terminalBody = document.getElementById("terminal-body");
@@ -429,6 +457,10 @@ import { computers } from "../data/computer";
         printLine(
           `Current date: ${new Date().toLocaleDateString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`,
         );
+        return;
+      }
+      if (result === "__EXIT__") {
+        closeWindow("terminal");
         return;
       }
       printLine(result);
