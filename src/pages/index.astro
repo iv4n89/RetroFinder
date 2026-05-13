@@ -94,11 +94,54 @@ import { computers } from "../data/computer";
       });
     }
 
+    // ── ZOOM RECT ────────────────────────────────────────
+    const canvas = document.getElementById("zoom-rect-canvas");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    function zoomRect(fromRect, toRect, onDone) {
+      const steps = 6;
+      const stepTime = 180 / steps;
+      let step = 0;
+
+      function drawRect(rect) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+      }
+
+      function animate() {
+        if (step >= steps) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          onDone();
+          return;
+        }
+        const t = step / steps;
+        drawRect({
+          x: fromRect.x + (toRect.x - fromRect.x) * t,
+          y: fromRect.y + (toRect.y - fromRect.y) * t,
+          w: fromRect.w + (toRect.w - fromRect.w) * t,
+          h: fromRect.h + (toRect.h - fromRect.h) * t,
+        });
+        step++;
+        setTimeout(animate, stepTime);
+      }
+
+      animate();
+    }
+
     // ── WINDOW MANAGEMENT ────────────────────────────────
     let museumInitialized = false;
     let archiveInitialized = false;
 
-    function openWindow(id) {
+    function openWindow(id, fromRect = null) {
       if (!wrappers[id]) return;
 
       if (
@@ -111,33 +154,42 @@ import { computers } from "../data/computer";
         return;
       }
 
-      document.body.classList.add("cursor-wait");
+      const wrapper = wrappers[id];
+      const pos = defaultPositions[id];
 
-      const delay = 600 + Math.random() * 600;
-
-      setTimeout(() => {
+      const doOpen = () => {
         document.body.classList.remove("cursor-wait");
-
-        if (wrappers[id].classList.contains("window-minimized")) {
+        if (wrapper.classList.contains("window-minimized")) {
           restoreWindow(id);
         } else {
-          wrappers[id].classList.remove("hidden");
+          wrapper.classList.remove("hidden");
         }
-
         topZ++;
-        wrappers[id].style.zIndex = topZ;
+        wrapper.style.zIndex = topZ;
         setActiveNav(id);
-
         if (id === "archive" && !archiveInitialized) {
           initArchive();
           archiveInitialized = true;
         }
-
         if (id === "museum" && !museumInitialized) {
           renderMuseum(0);
           museumInitialized = true;
         }
-      }, delay);
+      };
+
+      document.body.classList.add("cursor-wait");
+
+      if (fromRect && zoomRect) {
+        const to = {
+          x: pos.left,
+          y: pos.top,
+          w: wrapper.offsetWidth || 600,
+          h: wrapper.offsetHeight || 400,
+        };
+        zoomRect(fromRect, to, doOpen);
+      } else {
+        setTimeout(doOpen, 600 + Math.random() * 600);
+      }
     }
 
     const defaultPositions = {
@@ -149,35 +201,71 @@ import { computers } from "../data/computer";
     function closeWindow(id) {
       const wrapper = document.getElementById(`window-${id}-wrapper`);
       if (!wrapper) return;
-      wrapper.classList.remove("window-minimized");
-      wrapper.classList.add("hidden");
 
-      // reset position
-      const pos = defaultPositions[id];
-      wrapper.style.top = `${pos.top}px`;
-      wrapper.style.left = `${pos.left}px`;
+      const icon = document.querySelector(`.desktop-icon[data-window="${id}"]`);
 
-      let highestZ = 0;
-      let highestId = "desktop";
-      Object.entries(wrappers).forEach(([k, w]) => {
-        if (
-          k !== id &&
-          w &&
-          !w.classList.contains("hidden") &&
-          !w.classList.contains("window-minimized")
-        ) {
-          const z = parseInt(w.style.zIndex) || 0;
-          if (z > highestZ) {
-            highestZ = z;
-            highestId = k;
-          }
-        }
-      });
-      setActiveNav(highestId);
+      if (icon && zoomRect) {
+        const wRect = wrapper.getBoundingClientRect();
+        const iRect = icon.getBoundingClientRect();
+
+        const from = {
+          x: wRect.left,
+          y: wRect.top,
+          w: wRect.width,
+          h: wRect.height,
+        };
+        const to = {
+          x: iRect.left,
+          y: iRect.top,
+          w: iRect.width,
+          h: iRect.height,
+        };
+
+        zoomRect(from, to, () => {
+          wrapper.classList.remove("window-minimized");
+          wrapper.classList.add("hidden");
+          const pos = defaultPositions[id];
+          wrapper.style.top = `${pos.top}px`;
+          wrapper.style.left = `${pos.left}px`;
+
+          let highestZ = 0;
+          let highestId = "desktop";
+          Object.entries(wrappers).forEach(([k, w]) => {
+            if (
+              k !== id &&
+              w &&
+              !w.classList.contains("hidden") &&
+              !w.classList.contains("window-minimized")
+            ) {
+              const z = parseInt(w.style.zIndex) || 0;
+              if (z > highestZ) {
+                highestZ = z;
+                highestId = k;
+              }
+            }
+          });
+          setActiveNav(highestId);
+        });
+      } else {
+        wrapper.classList.remove("window-minimized");
+        wrapper.classList.add("hidden");
+        const pos = defaultPositions[id];
+        wrapper.style.top = `${pos.top}px`;
+        wrapper.style.left = `${pos.left}px`;
+      }
     }
 
     document.querySelectorAll(".desktop-icon").forEach((icon) => {
-      icon.addEventListener("click", () => openWindow(icon.dataset.window));
+      icon.addEventListener("click", () => {
+        const id = icon.dataset.window;
+        const rect = icon.getBoundingClientRect();
+        openWindow(id, {
+          x: rect.left,
+          y: rect.top,
+          w: rect.width,
+          h: rect.height,
+        });
+      });
     });
 
     document.querySelectorAll(".window-close-btn").forEach((btn) => {
