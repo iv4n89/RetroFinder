@@ -157,39 +157,44 @@ import { computers } from "../data/computer";
       const wrapper = wrappers[id];
       const pos = defaultPositions[id];
 
-      const doOpen = () => {
-        document.body.classList.remove("cursor-wait");
-        if (wrapper.classList.contains("window-minimized")) {
-          restoreWindow(id);
-        } else {
-          wrapper.classList.remove("hidden");
-        }
-        topZ++;
-        wrapper.style.zIndex = topZ;
-        setActiveNav(id);
-        if (id === "archive" && !archiveInitialized) {
-          initArchive();
-          archiveInitialized = true;
-        }
-        if (id === "museum" && !museumInitialized) {
-          renderMuseum(0);
-          museumInitialized = true;
-        }
-      };
-
       document.body.classList.add("cursor-wait");
 
-      if (fromRect && zoomRect) {
-        const to = {
-          x: pos.left,
-          y: pos.top,
-          w: wrapper.offsetWidth || 600,
-          h: wrapper.offsetHeight || 400,
+      // Delay simulando carga HDD
+      const delay = 600 + Math.random() * 600;
+
+      setTimeout(() => {
+        const doOpen = () => {
+          document.body.classList.remove("cursor-wait");
+          if (wrapper.classList.contains("window-minimized")) {
+            restoreWindow(id);
+          } else {
+            wrapper.classList.remove("hidden");
+          }
+          topZ++;
+          wrapper.style.zIndex = topZ;
+          setActiveNav(id);
+          if (id === "archive" && !archiveInitialized) {
+            initArchive();
+            archiveInitialized = true;
+          }
+          if (id === "museum" && !museumInitialized) {
+            renderMuseum(0);
+            museumInitialized = true;
+          }
         };
-        zoomRect(fromRect, to, doOpen);
-      } else {
-        setTimeout(doOpen, 600 + Math.random() * 600);
-      }
+
+        if (fromRect) {
+          const to = {
+            x: pos.left,
+            y: pos.top,
+            w: wrapper.offsetWidth || 600,
+            h: wrapper.offsetHeight || 400,
+          };
+          zoomRect(fromRect, to, doOpen);
+        } else {
+          doOpen();
+        }
+      }, delay);
     }
 
     const defaultPositions = {
