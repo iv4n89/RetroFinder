@@ -84,6 +84,16 @@ import { computers } from "../data/computer";
       terminal: document.getElementById("window-terminal-wrapper"),
     };
 
+    // ── NAV ──────────────────────────────────────────
+    function setActiveNav(id) {
+      document.querySelectorAll("[data-nav]").forEach((el) => {
+        const isActive = el.dataset.nav === id;
+        el.classList.toggle("bg-primary", isActive);
+        el.classList.toggle("text-on-primary", isActive);
+        el.classList.toggle("text-primary", !isActive);
+      });
+    }
+
     // ── WINDOW MANAGEMENT ────────────────────────────────
     let museumInitialized = false;
     let archiveInitialized = false;
@@ -91,6 +101,9 @@ import { computers } from "../data/computer";
     function openWindow(id) {
       if (!wrappers[id]) return;
       wrappers[id].classList.remove("hidden");
+      topZ++;
+      wrappers[id].style.zIndex = topZ;
+      setActiveNav(id);
 
       if (id === "archive" && !archiveInitialized) {
         initArchive();
@@ -119,6 +132,19 @@ import { computers } from "../data/computer";
       const pos = defaultPositions[id];
       wrapper.style.top = `${pos.top}px`;
       wrapper.style.left = `${pos.left}px`;
+
+      let highestZ = 0;
+      let highestId = "desktop";
+      Object.entries(wrappers).forEach(([k, w]) => {
+        if (k !== id && w && !w.classList.contains("hidden")) {
+          const z = parseInt(w.style.zIndex) || 0;
+          if (z > highestZ) {
+            highestZ = z;
+            highestId = k;
+          }
+        }
+      });
+      setActiveNav(highestId);
     }
 
     document.querySelectorAll(".desktop-icon").forEach((icon) => {
@@ -127,6 +153,33 @@ import { computers } from "../data/computer";
 
     document.querySelectorAll(".window-close-btn").forEach((btn) => {
       btn.addEventListener("click", () => closeWindow(btn.dataset.close));
+    });
+
+    // ── NAV ──────────────────────────────────────────
+    document.querySelectorAll("[data-nav]").forEach((el) => {
+      el.addEventListener("click", () => {
+        const id = el.dataset.nav;
+        if (id === "desktop") {
+          Object.keys(wrappers).forEach((k) => {
+            if (wrappers[k] && !wrappers[k].classList.contains("hidden")) {
+              minimizeWindow(k);
+            }
+          });
+          setActiveNav("desktop");
+        } else {
+          Object.keys(wrappers).forEach((k) => {
+            if (
+              wrappers[k] &&
+              wrappers[k].classList.contains("window-minimized") &&
+              k === id
+            ) {
+              restoreWindow(k);
+            }
+          });
+          openWindow(id);
+          setActiveNav(id);
+        }
+      });
     });
 
     // ── DRAG ───────────────────────────────────────────
@@ -170,6 +223,15 @@ import { computers } from "../data/computer";
       });
     }
 
+    Object.entries(wrappers).forEach(([id, wrapper]) => {
+      if (!wrapper) return;
+      wrapper.addEventListener("mousedown", () => {
+        topZ++;
+        wrapper.style.zIndex = topZ;
+        setActiveNav(id);
+      });
+    });
+
     Object.values(wrappers).forEach((wrapper) => {
       if (wrapper) makeDraggable(wrapper);
     });
@@ -187,7 +249,7 @@ import { computers } from "../data/computer";
 
       const slot = minimizedSlots[id] ?? 0;
       const slotWidth = 168;
-      const rightOffset = 16;
+      const rightOffset = 180;
       const bottomOffset = 8;
 
       wrapper.style.top = `calc(100dvh - ${bottomOffset}px - 60px)`;

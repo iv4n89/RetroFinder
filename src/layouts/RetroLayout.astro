@@ -33,12 +33,12 @@ const navItems = [
         <div class="flex">
           {
             navItems.map((item) => (
-              <a
-                href={item.href}
+              <span
+                data-nav={item.id}
                 class={`font-mono text-label-lg px-2 cursor-pointer no-underline ${activePage === item.id ? "bg-primary text-on-primary" : "text-primary hover:bg-primary hover:text-on-primary"}`}
               >
                 {item.label}
-              </a>
+              </span>
             ))
           }
         </div>
