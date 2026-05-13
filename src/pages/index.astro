@@ -100,20 +100,44 @@ import { computers } from "../data/computer";
 
     function openWindow(id) {
       if (!wrappers[id]) return;
-      wrappers[id].classList.remove("hidden");
-      topZ++;
-      wrappers[id].style.zIndex = topZ;
-      setActiveNav(id);
 
-      if (id === "archive" && !archiveInitialized) {
-        initArchive();
-        archiveInitialized = true;
+      if (
+        !wrappers[id].classList.contains("hidden") &&
+        !wrappers[id].classList.contains("window-minimized")
+      ) {
+        topZ++;
+        wrappers[id].style.zIndex = topZ;
+        setActiveNav(id);
+        return;
       }
 
-      if (id === "museum" && !museumInitialized) {
-        renderMuseum(0);
-        museumInitialized = true;
-      }
+      document.body.classList.add("cursor-wait");
+
+      const delay = 600 + Math.random() * 600;
+
+      setTimeout(() => {
+        document.body.classList.remove("cursor-wait");
+
+        if (wrappers[id].classList.contains("window-minimized")) {
+          restoreWindow(id);
+        } else {
+          wrappers[id].classList.remove("hidden");
+        }
+
+        topZ++;
+        wrappers[id].style.zIndex = topZ;
+        setActiveNav(id);
+
+        if (id === "archive" && !archiveInitialized) {
+          initArchive();
+          archiveInitialized = true;
+        }
+
+        if (id === "museum" && !museumInitialized) {
+          renderMuseum(0);
+          museumInitialized = true;
+        }
+      }, delay);
     }
 
     const defaultPositions = {

@@ -113,3 +113,7 @@ body {
 .window-minimized .window-title-bar {
   border-bottom: none;
 }
+
+.cursor-wait * {
+  cursor: none !important;
+}
