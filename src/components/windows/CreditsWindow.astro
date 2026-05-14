@@ -1,0 +1,43 @@
+---
+import Window from "../Window.astro";
+---
+
+<Window
+  title="Credits"
+  id="window-credits"
+  windowId="credits"
+  class="w-full max-w-xs"
+>
+  <div class="p-6 flex flex-col items-center gap-4 text-center">
+    <img
+      src="/icons/macintosh.svg"
+      alt="Macintosh"
+      style="width: 48px; height: 48px;"
+    />
+
+    <div>
+      <div class="font-mono text-headline-md font-bold">RetroFinder 1.0</div>
+      <div class="font-mono text-label-sm opacity-70 mt-1">
+        © 1984 RetroComputing Corp.
+      </div>
+    </div>
+
+    <div class="border-t border-primary border-dotted w-full pt-4">
+      <div class="font-mono text-label-sm opacity-70 mb-1">
+        DESIGNED & DEVELOPED BY
+      </div>
+      <div class="font-mono text-label-lg font-bold">Ivan Betanzos Macias</div>
+    </div>
+
+    <div class="border-t border-primary border-dotted w-full pt-4">
+      <div class="font-mono text-label-sm opacity-70 mb-1">BUILT WITH</div>
+      <div
+        class="font-mono text-label-sm flex flex-col justify-center items-center gap-1"
+      >
+        <span> Astro </span>
+        <span> Tailwind CSS </span>
+        <span> Chicago FLF </span>
+      </div>
+    </div>
+  </div>
+</Window>

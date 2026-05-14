@@ -77,13 +77,17 @@ const navItems = [
       <span class="font-mono text-label-lg">© 1984 RetroComputing Corp.</span>
       <div class="flex gap-4">
         {
-          ["Specs", "Manual", "Credits"].map((link) => (
-            <a
-              href="#"
-              class="font-body text-body-md no-underline text-primary hover:bg-primary hover:text-on-primary px-1"
+          [
+            { label: "Specs", id: "specs" },
+            { label: "Manual", id: "manual" },
+            { label: "Credits", id: "credits" },
+          ].map((item) => (
+            <span
+              data-nav={item.id}
+              class="font-mono text-body-md text-primary hover:bg-primary hover:text-on-primary px-1 cursor-pointer"
             >
-              {link}
-            </a>
+              {item.label}
+            </span>
           ))
         }
       </div>

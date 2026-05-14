@@ -4,6 +4,9 @@ import ArchiveWindow from "../components/windows/ArchiveWindow.astro";
 import MuseumWindow from "../components/windows/MuseumWindow.astro";
 import TerminalWindow from "../components/windows/TerminalWindow.astro";
 import { computers } from "../data/computer";
+import SpecsWindow from "../components/windows/SpecsWindow.astro";
+import ManualWindow from "../components/windows/ManualWindow.astro";
+import CreditsWindow from "../components/windows/CreditsWindow.astro";
 ---
 
 <RetroLayout title="Desktop" activePage="desktop">
@@ -70,6 +73,30 @@ import { computers } from "../data/computer";
   >
     <TerminalWindow />
   </div>
+
+  <div
+    id="window-specs-wrapper"
+    class="hidden absolute z-20"
+    style="top: 60px; left: 200px;"
+  >
+    <SpecsWindow />
+  </div>
+
+  <div
+    id="window-manual-wrapper"
+    class="hidden absolute z-20"
+    style="top: 80px; left: 220px;"
+  >
+    <ManualWindow />
+  </div>
+
+  <div
+    id="window-credits-wrapper"
+    class="hidden absolute z-20"
+    style="top: 100px; left: 240px;"
+  >
+    <CreditsWindow />
+  </div>
 </RetroLayout>
 
 <script is:inline define:vars={{ computers }}>
@@ -82,6 +109,9 @@ import { computers } from "../data/computer";
       archive: document.getElementById("window-archive-wrapper"),
       museum: document.getElementById("window-museum-wrapper"),
       terminal: document.getElementById("window-terminal-wrapper"),
+      specs: document.getElementById("window-specs-wrapper"),
+      manual: document.getElementById("window-manual-wrapper"),
+      credits: document.getElementById("window-credits-wrapper"),
     };
 
     // ── NAV ──────────────────────────────────────────
@@ -201,6 +231,9 @@ import { computers } from "../data/computer";
       archive: { top: 40, left: 160 },
       museum: { top: 40, left: 120 },
       terminal: { top: 60, left: 160 },
+      specs: { top: 60, left: 200 },
+      manual: { top: 80, left: 220 },
+      credits: { top: 100, left: 240 },
     };
 
     function closeWindow(id) {
@@ -399,7 +432,14 @@ import { computers } from "../data/computer";
     });
 
     // ── MINIMIZE ─────────────────────────────────────────
-    const minimizedSlots = { archive: 0, museum: 1, terminal: 2 };
+    const minimizedSlots = {
+      archive: 0,
+      museum: 1,
+      terminal: 2,
+      specs: 3,
+      manual: 4,
+      credits: 5,
+    };
 
     function minimizeWindow(id) {
       const wrapper = document.getElementById(`window-${id}-wrapper`);
