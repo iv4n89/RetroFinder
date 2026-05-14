@@ -117,7 +117,8 @@ import CreditsWindow from "../components/windows/CreditsWindow.astro";
     // ── NAV ──────────────────────────────────────────
     function setActiveNav(id) {
       document.querySelectorAll("[data-nav]").forEach((el) => {
-        const isActive = el.dataset.nav === id;
+        const isFooter = el.closest("footer");
+        const isActive = !isFooter && el.dataset.nav === id;
         el.classList.toggle("bg-primary", isActive);
         el.classList.toggle("text-on-primary", isActive);
         el.classList.toggle("text-primary", !isActive);
