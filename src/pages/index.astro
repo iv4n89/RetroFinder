@@ -101,585 +101,92 @@ import CreditsWindow from "../components/windows/CreditsWindow.astro";
 
 <script is:inline define:vars={{ computers }}>
   window._computers = computers;
+</script>
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const computers = window._computers;
-    // ── WRAPPERS ─────────────────────────────────────────
-    const wrappers = {
-      archive: document.getElementById("window-archive-wrapper"),
-      museum: document.getElementById("window-museum-wrapper"),
-      terminal: document.getElementById("window-terminal-wrapper"),
-      specs: document.getElementById("window-specs-wrapper"),
-      manual: document.getElementById("window-manual-wrapper"),
-      credits: document.getElementById("window-credits-wrapper"),
-    };
+<script>
+  import { initCanvas } from "../scripts/zoom";
+  import { setActiveNav } from "../scripts/nav";
+  import { createWindowManager } from "../scripts/windows";
+  import { makeDraggable } from "../scripts/drag";
+  import { initTerminal } from "../scripts/terminal";
+  import { initArchive } from "../scripts/archive";
+  import { initMuseum } from "../scripts/museum";
+  import type { Computer } from "../data/computer";
 
-    // ── NAV ──────────────────────────────────────────
-    function setActiveNav(id) {
-      document.querySelectorAll("[data-nav]").forEach((el) => {
-        const isFooter = el.closest("footer");
-        const isActive = !isFooter && el.dataset.nav === id;
-        el.classList.toggle("bg-primary", isActive);
-        el.classList.toggle("text-on-primary", isActive);
-        el.classList.toggle("text-primary", !isActive);
-      });
-    }
+  const computers = (window as unknown as { _computers: Computer[] })._computers;
 
-    // ── ZOOM RECT ────────────────────────────────────────
-    const canvas = document.getElementById("zoom-rect-canvas");
-    const ctx = canvas.getContext("2d");
+  initCanvas();
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
+  const { wrappers, openWindow, closeWindow, minimizeWindow, restoreWindow, bringToFront } =
+    createWindowManager({
+      onArchiveFirstOpen: () => initArchive(computers),
+      onMuseumFirstOpen: () => initMuseum(computers),
+    });
 
-    function zoomRect(fromRect, toRect, onDone) {
-      const steps = 6;
-      const stepTime = 180 / steps;
-      let step = 0;
+  initTerminal(closeWindow);
 
-      function drawRect(rect) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = "#000";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
-      }
+  // ── DESKTOP ICONS ────────────────────────────────────
+  document.querySelectorAll(".desktop-icon").forEach((icon) => {
+    icon.addEventListener("click", () => {
+      const id = (icon as HTMLElement).dataset.window!;
+      const rect = icon.getBoundingClientRect();
+      openWindow(id, { x: rect.left, y: rect.top, w: rect.width, h: rect.height });
+    });
+  });
 
-      function animate() {
-        if (step >= steps) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          onDone();
-          return;
-        }
-        const t = step / steps;
-        drawRect({
-          x: fromRect.x + (toRect.x - fromRect.x) * t,
-          y: fromRect.y + (toRect.y - fromRect.y) * t,
-          w: fromRect.w + (toRect.w - fromRect.w) * t,
-          h: fromRect.h + (toRect.h - fromRect.h) * t,
-        });
-        step++;
-        setTimeout(animate, stepTime);
-      }
+  // ── WINDOW BUTTONS ───────────────────────────────────
+  document.querySelectorAll(".window-close-btn").forEach((btn) => {
+    btn.addEventListener("click", () => closeWindow((btn as HTMLElement).dataset.close!));
+  });
 
-      animate();
-    }
-
-    // ── WINDOW MANAGEMENT ────────────────────────────────
-    let museumInitialized = false;
-    let archiveInitialized = false;
-
-    function openWindow(id, fromRect = null) {
-      if (!wrappers[id]) return;
-
-      if (
-        !wrappers[id].classList.contains("hidden") &&
-        !wrappers[id].classList.contains("window-minimized")
-      ) {
-        topZ++;
-        wrappers[id].style.zIndex = topZ;
-        setActiveNav(id);
-        return;
-      }
-
-      const wrapper = wrappers[id];
-      const pos = defaultPositions[id];
-
-      document.body.classList.add("cursor-wait");
-
-      // Delay simulando carga HDD
-      const delay = 600 + Math.random() * 600;
-
-      setTimeout(() => {
-        const doOpen = () => {
-          document.body.classList.remove("cursor-wait");
-          if (wrapper.classList.contains("window-minimized")) {
-            restoreWindow(id);
-          } else {
-            wrapper.classList.remove("hidden");
-          }
-          topZ++;
-          wrapper.style.zIndex = topZ;
-          setActiveNav(id);
-          if (id === "archive" && !archiveInitialized) {
-            initArchive();
-            archiveInitialized = true;
-          }
-          if (id === "museum" && !museumInitialized) {
-            renderMuseum(0);
-            museumInitialized = true;
-          }
-        };
-
-        if (fromRect) {
-          const to = {
-            x: pos.left,
-            y: pos.top,
-            w: wrapper.offsetWidth || 600,
-            h: wrapper.offsetHeight || 400,
-          };
-          zoomRect(fromRect, to, doOpen);
-        } else {
-          doOpen();
-        }
-      }, delay);
-    }
-
-    const defaultPositions = {
-      archive: { top: 40, left: 160 },
-      museum: { top: 40, left: 120 },
-      terminal: { top: 60, left: 160 },
-      specs: { top: 60, left: 200 },
-      manual: { top: 80, left: 220 },
-      credits: { top: 100, left: 240 },
-    };
-
-    function closeWindow(id) {
+  document.querySelectorAll(".window-minimize-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = (btn as HTMLElement).dataset.minimize;
+      if (!id) return;
       const wrapper = document.getElementById(`window-${id}-wrapper`);
       if (!wrapper) return;
+      wrapper.classList.contains("window-minimized") ? restoreWindow(id) : minimizeWindow(id);
+    });
+  });
 
-      const icon = document.querySelector(`.desktop-icon[data-window="${id}"]`);
+  document.querySelectorAll(".window-title-bar").forEach((bar) => {
+    bar.addEventListener("dblclick", (e) => {
+      if ((e.target as HTMLElement).closest(".window-close-btn")) return;
+      if ((e.target as HTMLElement).closest(".window-minimize-btn")) return;
+      const wrapper = bar.closest('[id$="-wrapper"]') as HTMLElement | null;
+      if (!wrapper) return;
+      const id = wrapper.id.replace("window-", "").replace("-wrapper", "");
+      if (wrapper.classList.contains("window-minimized")) restoreWindow(id);
+    });
+  });
 
-      if (icon && zoomRect) {
-        const wRect = wrapper.getBoundingClientRect();
-        const iRect = icon.getBoundingClientRect();
-
-        const from = {
-          x: wRect.left,
-          y: wRect.top,
-          w: wRect.width,
-          h: wRect.height,
-        };
-        const to = {
-          x: iRect.left,
-          y: iRect.top,
-          w: iRect.width,
-          h: iRect.height,
-        };
-
-        zoomRect(from, to, () => {
-          wrapper.classList.remove("window-minimized");
-          wrapper.classList.add("hidden");
-          const pos = defaultPositions[id];
-          wrapper.style.top = `${pos.top}px`;
-          wrapper.style.left = `${pos.left}px`;
-
-          let highestZ = 0;
-          let highestId = "desktop";
-          Object.entries(wrappers).forEach(([k, w]) => {
-            if (
-              k !== id &&
-              w &&
-              !w.classList.contains("hidden") &&
-              !w.classList.contains("window-minimized")
-            ) {
-              const z = parseInt(w.style.zIndex) || 0;
-              if (z > highestZ) {
-                highestZ = z;
-                highestId = k;
-              }
-            }
-          });
-          setActiveNav(highestId);
+  // ── NAV BAR ──────────────────────────────────────────
+  document.querySelectorAll("[data-nav]").forEach((el) => {
+    el.addEventListener("click", () => {
+      const id = (el as HTMLElement).dataset.nav!;
+      if (id === "desktop") {
+        Object.keys(wrappers).forEach((k) => {
+          if (wrappers[k] && !wrappers[k]!.classList.contains("hidden")) minimizeWindow(k);
         });
+        setActiveNav("desktop");
       } else {
-        wrapper.classList.remove("window-minimized");
-        wrapper.classList.add("hidden");
-        const pos = defaultPositions[id];
-        wrapper.style.top = `${pos.top}px`;
-        wrapper.style.left = `${pos.left}px`;
-      }
-    }
-
-    document.querySelectorAll(".desktop-icon").forEach((icon) => {
-      icon.addEventListener("click", () => {
-        const id = icon.dataset.window;
-        const rect = icon.getBoundingClientRect();
-        openWindow(id, {
-          x: rect.left,
-          y: rect.top,
-          w: rect.width,
-          h: rect.height,
+        Object.keys(wrappers).forEach((k) => {
+          if (wrappers[k]?.classList.contains("window-minimized") && k === id) restoreWindow(k);
         });
-      });
-    });
-
-    document.querySelectorAll(".window-close-btn").forEach((btn) => {
-      btn.addEventListener("click", () => closeWindow(btn.dataset.close));
-    });
-
-    // ── NAV ──────────────────────────────────────────
-    document.querySelectorAll("[data-nav]").forEach((el) => {
-      el.addEventListener("click", () => {
-        const id = el.dataset.nav;
-        if (id === "desktop") {
-          Object.keys(wrappers).forEach((k) => {
-            if (wrappers[k] && !wrappers[k].classList.contains("hidden")) {
-              minimizeWindow(k);
-            }
-          });
-          setActiveNav("desktop");
-        } else {
-          Object.keys(wrappers).forEach((k) => {
-            if (
-              wrappers[k] &&
-              wrappers[k].classList.contains("window-minimized") &&
-              k === id
-            ) {
-              restoreWindow(k);
-            }
-          });
-          const rect = el.getBoundingClientRect();
-          openWindow(id, {
-            x: rect.left,
-            y: rect.top,
-            w: rect.width,
-            h: rect.height,
-          });
-          setActiveNav(id);
-        }
-      });
-    });
-
-    // ── DRAG ───────────────────────────────────────────
-    let topZ = 30;
-
-    function makeDraggable(wrapper) {
-      const titleBar = wrapper.querySelector(".window-title-bar");
-      if (!titleBar) return;
-
-      let isDragging = false;
-      let startX, startY, startLeft, startTop;
-
-      function drawOutline(x, y, w, h) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        ctx.lineWidth = 1;
-
-        ctx.strokeStyle = "#ffffff";
-        ctx.setLineDash([2, 2]);
-        ctx.lineDashOffset = 0;
-        ctx.strokeRect(x, y, w, h);
-
-        ctx.strokeStyle = "#000000";
-        ctx.setLineDash([2, 2]);
-        ctx.lineDashOffset = 2;
-        ctx.strokeRect(x, y, w, h);
-      }
-
-      function clearOutline() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
-
-      titleBar.addEventListener("mousedown", (e) => {
-        if (e.target.closest(".window-close-btn")) return;
-        if (e.target.closest(".window-minimize-btn")) return;
-
-        isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
-
-        const rect = wrapper.getBoundingClientRect();
-        startLeft = rect.left;
-        startTop = rect.top;
-
-        topZ++;
-        wrapper.style.zIndex = topZ;
-
-        e.preventDefault();
-      });
-
-      document.addEventListener("mousemove", (e) => {
-        if (!isDragging) return;
-
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        const newLeft = startLeft + dx;
-        const newTop = startTop + dy;
-
-        const rect = wrapper.getBoundingClientRect();
-        drawOutline(newLeft, newTop, rect.width, rect.height);
-      });
-
-      document.addEventListener("mouseup", (e) => {
-        if (!isDragging) return;
-        isDragging = false;
-
-        clearOutline();
-
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        wrapper.style.left = `${startLeft + dx}px`;
-        wrapper.style.top = `${startTop + dy}px`;
-      });
-    }
-
-    Object.entries(wrappers).forEach(([id, wrapper]) => {
-      if (!wrapper) return;
-      wrapper.addEventListener("mousedown", () => {
-        topZ++;
-        wrapper.style.zIndex = topZ;
-        if (!wrapper.classList.contains("window-minimized")) {
-          setActiveNav(id);
-        }
-      });
-    });
-
-    Object.values(wrappers).forEach((wrapper) => {
-      if (wrapper) makeDraggable(wrapper);
-    });
-
-    // ── MINIMIZE ─────────────────────────────────────────
-    const minimizedSlots = {
-      archive: 0,
-      museum: 1,
-      terminal: 2,
-      specs: 3,
-      manual: 4,
-      credits: 5,
-    };
-
-    function minimizeWindow(id) {
-      const wrapper = document.getElementById(`window-${id}-wrapper`);
-      if (!wrapper) return;
-
-      const rect = wrapper.getBoundingClientRect();
-      wrapper.dataset.prevTop = `${rect.top}px`;
-      wrapper.dataset.prevLeft = `${rect.left}px`;
-
-      const slot = minimizedSlots[id] ?? 0;
-      const slotWidth = 168;
-      const rightOffset = 180;
-      const bottomOffset = 8;
-
-      wrapper.style.top = `calc(100dvh - ${bottomOffset}px - 60px)`;
-      wrapper.style.left = `calc(100dvw - ${rightOffset}px - ${slotWidth * (slot + 1)}px)`;
-      wrapper.style.zIndex = 25;
-      wrapper.classList.add("window-minimized");
-
-      let highestZ = 0;
-      let highestId = "desktop";
-      Object.entries(wrappers).forEach(([k, w]) => {
-        if (
-          k !== id &&
-          w &&
-          !w.classList.contains("hidden") &&
-          !w.classList.contains("window-minimized")
-        ) {
-          const z = parseInt(w.style.zIndex) || 0;
-          if (z > highestZ) {
-            highestZ = z;
-            highestId = k;
-          }
-        }
-      });
-      setActiveNav(highestId);
-    }
-
-    function restoreWindow(id) {
-      const wrapper = document.getElementById(`window-${id}-wrapper`);
-      if (!wrapper) return;
-
-      wrapper.style.top =
-        wrapper.dataset.prevTop || defaultPositions[id].top + "px";
-      wrapper.style.left =
-        wrapper.dataset.prevLeft || defaultPositions[id].left + "px";
-      wrapper.classList.remove("window-minimized");
-      topZ++;
-      wrapper.style.zIndex = topZ;
-
-      setActiveNav(id);
-    }
-
-    document.querySelectorAll(".window-title-bar").forEach((bar) => {
-      bar.addEventListener("dblclick", (e) => {
-        if (e.target.closest(".window-close-btn")) return;
-        if (e.target.closest(".window-minimize-btn")) return;
-        const wrapper = bar.closest('[id$="-wrapper"]');
-        if (!wrapper) return;
-        const id = wrapper.id.replace("window-", "").replace("-wrapper", "");
-        if (wrapper.classList.contains("window-minimized")) {
-          restoreWindow(id);
-        }
-      });
-    });
-
-    document.querySelectorAll(".window-minimize-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.dataset.minimize;
-        if (!id) return;
-        const wrapper = document.getElementById(`window-${id}-wrapper`);
-        if (!wrapper) return;
-        if (wrapper.classList.contains("window-minimized")) {
-          restoreWindow(id);
-        } else {
-          minimizeWindow(id);
-        }
-      });
-    });
-
-    // ── ARCHIVE ──────────────────────────────────────────
-    function initArchive() {
-      const rows = document.querySelectorAll(".computer-row");
-      const detailEmpty = document.getElementById("detail-empty");
-      const detailContent = document.getElementById("detail-content");
-
-      rows.forEach((row) => {
-        row.addEventListener("click", () => {
-          const computer = computers.find((c) => c.id === row.dataset.id);
-          if (!computer) return;
-
-          rows.forEach((r) =>
-            r.classList.remove("bg-primary", "text-on-primary"),
-          );
-          row.classList.add("bg-primary", "text-on-primary");
-
-          detailEmpty.classList.add("hidden");
-          detailContent.classList.remove("hidden");
-          detailContent.classList.add("flex");
-
-          document.getElementById("detail-name").textContent =
-            `${computer.name} (${computer.year})`;
-          document.getElementById("detail-type").textContent =
-            computer.type.toUpperCase();
-          document.getElementById("detail-description").textContent =
-            computer.description;
-          document.getElementById("detail-significance").textContent =
-            computer.significance;
-          document.getElementById("spec-cpu").textContent = computer.cpu;
-          document.getElementById("spec-speed").textContent = computer.cpuSpeed;
-          document.getElementById("spec-ram").textContent = computer.ram;
-          document.getElementById("spec-os").textContent = computer.os;
-          document.getElementById("spec-price").textContent = computer.price;
-        });
-      });
-    }
-
-    // ── MUSEUM ───────────────────────────────────────────
-    let current = 0;
-
-    function renderMuseum(index) {
-      const c = computers[index];
-      document.getElementById("museum-name").textContent =
-        `${c.name} (${c.year})`;
-      document.getElementById("museum-type").textContent = c.type.toUpperCase();
-      document.getElementById("museum-description").textContent = c.description;
-      document.getElementById("museum-counter").textContent =
-        `Card ${index + 1} of ${computers.length}`;
-      document.getElementById("museum-id").textContent =
-        `ID: ${String(index + 1).padStart(4, "0")}`;
-      document.getElementById("mspec-cpu").textContent = c.cpu;
-      document.getElementById("mspec-ram").textContent = c.ram;
-      document.getElementById("mspec-speed").textContent = c.cpuSpeed;
-      document.getElementById("mspec-os").textContent = c.os;
-      document.getElementById("mspec-price").textContent = c.price;
-      const img = document.getElementById("museum-img");
-      if (img) {
-        img.src = `/images/${c.id}.webp`;
-        img.alt = c.name;
-      }
-    }
-
-    document.getElementById("btn-next")?.addEventListener("click", () => {
-      current = (current + 1) % computers.length;
-      renderMuseum(current);
-    });
-
-    document.getElementById("btn-prev")?.addEventListener("click", () => {
-      current = (current - 1 + computers.length) % computers.length;
-      renderMuseum(current);
-    });
-
-    document.getElementById("museum-search")?.addEventListener("input", (e) => {
-      const query = e.target.value.toLowerCase();
-      if (!query) return;
-      const index = computers.findIndex((c) =>
-        c.name.toLowerCase().includes(query),
-      );
-      if (index !== -1) {
-        current = index;
-        renderMuseum(current);
+        const rect = el.getBoundingClientRect();
+        openWindow(id, { x: rect.left, y: rect.top, w: rect.width, h: rect.height });
+        setActiveNav(id);
       }
     });
+  });
 
-    // ── TERMINAL ─────────────────────────────────────────
-    const commands = {
-      HELP: `Available commands:\n  HELP     - show this help\n  DIR      - list files\n  CLS      - clear screen\n  VER      - system version\n  DATE     - current date\n  HISTORY  - computing history\n  LIST     - list computers\n  EXIT     - close terminal`,
-      DIR: `Volume in drive C: RETRO_HD\n\nDirectory of C:\\\n\n  SYSTEM/\n  ARCHIVE/\n  MUSEUM/\n  README.TXT          512 bytes\n  HISTORY.DAT       4.096 bytes\n\n  2 file(s)       4.608 bytes\n  2 dir(s)       59.392 bytes free`,
-      CLS: "__CLEAR__",
-      VER: `RetroOS Version 1.0\nCopyright (c) 1984 RetroComputing Corp.`,
-      DATE: "__DATE__",
-      HISTORY: `=== HISTORY OF RETROCOMPUTING ===\n\n1945  ENIAC — first electronic computer\n1947  Transistor invented (Bell Labs)\n1971  Intel 4004 — first microprocessor\n1975  Altair 8800 — the big bang of PC\n1977  Apple II, TRS-80, Commodore PET\n1981  IBM PC — the standard is born\n1982  Commodore 64 — best seller ever\n1984  Macintosh — GUI for everyone\n1985  Amiga & Atari ST — 16-bit era\n1993  Pentium — multimedia era`,
-      LIST: `=== COMPUTERS IN ARCHIVE ===\n\n  ENIAC (1945)              Mainframe\n  Altair 8800 (1975)        Micro\n  Apple II (1977)           Personal\n  TRS-80 Model I (1977)     Personal\n  IBM PC (1981)             Personal\n  Commodore 64 (1982)       Personal\n  Apple Lisa (1983)         GUI Station\n  Macintosh 128K (1984)     Revolution\n  Amiga 1000 (1985)         Personal\n  Atari ST (1985)           Personal`,
-      EXIT: "__EXIT__",
-    };
-
-    const terminalBody = document.getElementById("terminal-body");
-    const terminalHistory = document.getElementById("terminal-history");
-    const terminalDisplay = document.getElementById("terminal-input-display");
-    let terminalInput = "";
-
-    function printLine(text, isCommand = false) {
-      text.split("\n").forEach((line) => {
-        const p = document.createElement("p");
-        p.className = isCommand
-          ? "flex gap-2 mb-1"
-          : "opacity-70 mb-[2px] whitespace-pre";
-        p.textContent = isCommand ? `C:\\> ${line}` : line;
-        terminalHistory.appendChild(p);
-      });
-      terminalBody.scrollTop = terminalBody.scrollHeight;
-    }
-
-    function runCommand(cmd) {
-      const key = cmd.trim().toUpperCase().split(" ")[0];
-      printLine(cmd, true);
-      if (!key) return;
-      const result = commands[key];
-      if (!result) {
-        printLine(
-          `'${cmd}' is not recognized. Type HELP for available commands.`,
-        );
-        return;
-      }
-      if (result === "__CLEAR__") {
-        terminalHistory.innerHTML = "";
-        return;
-      }
-      if (result === "__DATE__") {
-        printLine(
-          `Current date: ${new Date().toLocaleDateString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}`,
-        );
-        return;
-      }
-      if (result === "__EXIT__") {
-        closeWindow("terminal");
-        return;
-      }
-      printLine(result);
-    }
-
-    document.addEventListener("keydown", (e) => {
-      if (!wrappers.terminal?.classList.contains("hidden")) {
-        if (e.key === "Enter") {
-          runCommand(terminalInput);
-          terminalInput = "";
-          terminalDisplay.textContent = "";
-          return;
-        }
-        if (e.key === "Backspace") {
-          terminalInput = terminalInput.slice(0, -1);
-          terminalDisplay.textContent = terminalInput;
-          return;
-        }
-        if (e.key.length === 1) {
-          terminalInput += e.key.toUpperCase();
-          terminalDisplay.textContent = terminalInput;
-        }
-      }
+  // ── DRAG & FOCUS ─────────────────────────────────────
+  Object.entries(wrappers).forEach(([id, wrapper]) => {
+    if (!wrapper) return;
+    wrapper.addEventListener("mousedown", () => {
+      bringToFront(wrapper);
+      if (!wrapper.classList.contains("window-minimized")) setActiveNav(id);
     });
+    makeDraggable(wrapper);
   });
 </script>

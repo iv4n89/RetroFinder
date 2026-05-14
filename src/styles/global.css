@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
 @font-face {
   font-family: "Chicago";
-  src: url("/fonts/Chicago.ttf") format("truetype");
+  src: url("/fonts/ChicagoFLF.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -9,7 +9,6 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colores — generan bg-*, text-*, border-* */
   --color-primary: #000000;
   --color-surface: #f9f9f9;
   --color-on-primary: #ffffff;
@@ -20,17 +19,14 @@
   --color-surface-container-high: #e8e8e8;
   --color-surface-container-highest: #e2e2e2;
 
-  /* Fuentes — generan font-* */
   --font-mono: "Chicago", monospace;
   --font-body: "Chicago", monospace;
 
-  /* Spacing — generan h-*, w-*, p-*, m-*, top-*, etc */
   --spacing-titlebar: 20px;
   --spacing-sidebar: 96px;
   --spacing-footer: 24px;
 }
 
-/* Patrones que Tailwind no puede generar, los definimos como clases normales */
 .bg-dither {
   background-image: radial-gradient(circle, #000 1.5px, transparent 1.5px);
   background-size: 4px 4px;
