@@ -19,6 +19,22 @@ const navItems = [
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Preload local fonts -->
+    <link
+      rel="preload"
+      href="/fonts/Chicago.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <!-- Preload Material Symbols -->
+    <link
+      rel="preload"
+      href="https://fonts.gstatic.com/s/materialsymbolsoutlined/v217/kJEhBvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oFsI.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} - RetroFinder</title>
@@ -48,34 +64,6 @@ const navItems = [
         <span class="material-symbols-outlined cursor-pointer">settings</span>
       </div>
     </header>
-
-    <!-- SIDE NAV BAR -->
-    <!-- <aside
-      class="fixed left-0 top-titlebar h-full w-sidebar bg-surface border-r-2 border-primary flex flex-col py-4 z-40"
-    >
-      <div class="flex flex-col items-center gap-1 mb-6 text-center px-2">
-        <span class="material-symbols-outlined" style="font-size: 32px;"
-          >computer</span
-        >
-        <span class="font-mono text-label-sm">Finder 1.0</span>
-        <span class="font-mono text-label-sm opacity-70">64K RAM</span>
-      </div>
-      <nav class="flex flex-col gap-2">
-        {
-          [
-            { icon: "flaky", label: "Disks" },
-            { icon: "terminal", label: "System" },
-            { icon: "lan", label: "Network" },
-            { icon: "delete", label: "Trash" },
-          ].map((item) => (
-            <div class="text-primary p-2 flex flex-col items-center gap-1 cursor-pointer hover:bg-primary-container hover:text-on-primary">
-              <span class="material-symbols-outlined">{item.icon}</span>
-              <span class="font-mono text-label-sm">{item.label}</span>
-            </div>
-          ))
-        }
-      </nav>
-    </aside> -->
 
     <!-- MAIN CONTENT -->
     <main class="fixed inset-0 pt-titlebar pb-footer overflow-hidden">
@@ -113,7 +101,9 @@ const navItems = [
         <polygon
           points="0,0 0,14 3,11 6,17 8,16 5,10 9,10"
           fill="black"
-          stroke="none"></polygon>
+          stroke="white"
+          stroke-width="1"
+          stroke-linejoin="round"></polygon>
       </g>
       <!-- Wait cursor -->
       <g id="cursor-wait" style="display:none;">
