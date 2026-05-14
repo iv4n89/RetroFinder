@@ -320,8 +320,29 @@ import { computers } from "../data/computer";
       let isDragging = false;
       let startX, startY, startLeft, startTop;
 
+      function drawOutline(x, y, w, h) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.lineWidth = 1;
+
+        ctx.strokeStyle = "#ffffff";
+        ctx.setLineDash([2, 2]);
+        ctx.lineDashOffset = 0;
+        ctx.strokeRect(x, y, w, h);
+
+        ctx.strokeStyle = "#000000";
+        ctx.setLineDash([2, 2]);
+        ctx.lineDashOffset = 2;
+        ctx.strokeRect(x, y, w, h);
+      }
+
+      function clearOutline() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
       titleBar.addEventListener("mousedown", (e) => {
         if (e.target.closest(".window-close-btn")) return;
+        if (e.target.closest(".window-minimize-btn")) return;
 
         isDragging = true;
         startX = e.clientX;
@@ -331,23 +352,34 @@ import { computers } from "../data/computer";
         startLeft = rect.left;
         startTop = rect.top;
 
-        wrapper.style.left = startLeft + "px";
-        wrapper.style.top = startTop + "px";
-
         topZ++;
         wrapper.style.zIndex = topZ;
+
+        e.preventDefault();
       });
 
       document.addEventListener("mousemove", (e) => {
         if (!isDragging) return;
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        const newLeft = startLeft + dx;
+        const newTop = startTop + dy;
+
+        const rect = wrapper.getBoundingClientRect();
+        drawOutline(newLeft, newTop, rect.width, rect.height);
+      });
+
+      document.addEventListener("mouseup", (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        clearOutline();
+
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
         wrapper.style.left = `${startLeft + dx}px`;
         wrapper.style.top = `${startTop + dy}px`;
-      });
-
-      document.addEventListener("mouseup", () => {
-        isDragging = false;
       });
     }
 
