@@ -298,7 +298,13 @@ import { computers } from "../data/computer";
               restoreWindow(k);
             }
           });
-          openWindow(id);
+          const rect = el.getBoundingClientRect();
+          openWindow(id, {
+            x: rect.left,
+            y: rect.top,
+            w: rect.width,
+            h: rect.height,
+          });
           setActiveNav(id);
         }
       });
